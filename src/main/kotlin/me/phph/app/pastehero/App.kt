@@ -3,7 +3,8 @@
 package me.phph.app.pastehero
 
 import javafx.application.Application
-import javafx.beans.property.SimpleDoubleProperty
+import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.control.Button
@@ -14,7 +15,7 @@ import java.awt.MouseInfo
 
 class AppGui : Application() {
 
-    val triggered = SimpleDoubleProperty(0.0)
+    private val triggered = SimpleBooleanProperty(false)
 
     private val native = Native
     private val paster = Paster
@@ -44,25 +45,50 @@ class AppGui : Application() {
         }
     }
 
-    private fun showEntryList(mouseX: Int, mouseY: Int) {
+    private fun hideEntryList() {
+        Platform.runLater {
+            entryStage?.hide()
+        }
+    }
+
+    private fun showEntryList() {
+        val pos = MouseInfo.getPointerInfo().location
         if (entryStage == null) {
             entryStage = initEntryStage().apply {
-                x = mouseX * 1.0
-                y = mouseY * 1.0
+                x = pos.x * 1.0
+                y = pos.y * 1.0
                 onCloseRequest = EventHandler {
-                    println("here")
-                    hide()
+                    hideEntryList()
                 }
             }
         } else {
             updateEntryDisplay()
         }
-        entryStage?.show()
+        Platform.runLater {
+            entryStage?.show()
+        }
+    }
+
+    private fun bindings() {
+        triggered.bind(native.triggered)
+        triggered.addListener { _, _, newValue ->
+            if (newValue) {
+                if (!showing) {
+                    Platform.runLater {
+                        showEntryList()
+                    }
+                } else {
+                    Platform.runLater {
+                        hideEntryList()
+                    }
+                }
+            }
+        }
     }
 
     override fun start(primaryStage: Stage?) {
-        native.gui = this
         this.primaryStage = primaryStage
+        bindings()
 
 //        triggered.addListener { _, _, newVal ->
 //            if (newVal == 1.0) {
@@ -99,20 +125,23 @@ class AppGui : Application() {
 //                println("check")
 //            }
 //        }, 0, 50)
-
-        while (true) {
-            if (triggered.value == 1.0) {
-                if (!showing) {
-                    val pos = MouseInfo.getPointerInfo().location
-                    showEntryList(pos.x, pos.y)
-                    triggered.value = 0.0
-                }
-            }
-//            if (entryStage?.isFocused != true) {
-//                Platform.runLater { entryStage?.hide() }
+//        GlobalScope.launch {
+//            while (true) {
+//                if (triggered.value == 1.0) {
+//                    if (!showing) {
+//                        val pos = MouseInfo.getPointerInfo().location
+//                        showEntryList(pos.x, pos.y)
+//                        triggered.value = 0.0
+//                    }
+//                }
+////            if (entryStage?.isFocused != true) {
+////                Platform.runLater { entryStage?.hide() }
+////            }
+//                delay(10)
 //            }
-            Thread.sleep(50)
-        }
+//        }
+//        print("here2")
+
 
 //        primaryStage?.apply {
 //            title = "Clipboard Test"

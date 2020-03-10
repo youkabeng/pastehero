@@ -1,5 +1,6 @@
 package me.phph.app.pastehero
 
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.scene.input.Clipboard
 
 enum class EntryType {
@@ -20,10 +21,13 @@ object Paster {
     private val entries = mutableListOf<Entry>()
     private val clipboard = Clipboard.getSystemClipboard()
 
+    val updated = SimpleIntegerProperty(0)
+
     init {
         object : com.sun.glass.ui.ClipboardAssistance(com.sun.glass.ui.Clipboard.SYSTEM) {
             override fun contentChanged() {
                 readClipboardEntry()
+                updated.add(1)
             }
         }
     }

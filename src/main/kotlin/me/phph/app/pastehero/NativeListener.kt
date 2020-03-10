@@ -1,16 +1,17 @@
 package me.phph.app.pastehero
 
+import javafx.beans.property.SimpleBooleanProperty
 import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
 
 object Native : NativeKeyListener {
 
-    var gui: AppGui? = null
+    val triggered = SimpleBooleanProperty(false)
 
-    var isCtrlPressed = false
-    var isShiftPressed = false
-    var isAltPressed = false
-    var isSuperPressed = false
+    private var isCtrlPressed = false
+    private var isShiftPressed = false
+    private var isAltPressed = false
+    private var isSuperPressed = false
 
     override fun nativeKeyTyped(p0: NativeKeyEvent?) {
     }
@@ -30,9 +31,7 @@ object Native : NativeKeyListener {
                 isSuperPressed = true
             }
         }
-        if (isCtrlPressed && isAltPressed && p0.keyCode == 0x2F) {
-            gui?.triggered?.value = 1.0
-        }
+        triggered.value = isCtrlPressed && isAltPressed && p0.keyCode == 0x2F
     }
 
     override fun nativeKeyReleased(p0: NativeKeyEvent?) {
