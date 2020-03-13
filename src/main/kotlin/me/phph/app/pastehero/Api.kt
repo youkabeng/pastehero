@@ -20,7 +20,7 @@ data class Entry(val id: Int, val type: EntryType, val value: String, val varian
 object Paster {
 
     private var initialId = 0
-    private val entries = mutableListOf<Entry>()
+    private val entryList = mutableListOf<Entry>()
     private val clipboard = Clipboard.getSystemClipboard()
 
     val updated = SimpleIntegerProperty(0)
@@ -61,7 +61,7 @@ object Paster {
     }
 
     fun listEntries(): List<Entry> {
-        return entries.toList()
+        return entryList.toList()
     }
 
     fun readClipboardEntry() {
@@ -70,7 +70,7 @@ object Paster {
             if (clipboard.hasHtml()) {
                 entry.variants.add(Entry(generateId(), EntryType.HTML, clipboard.html, mutableListOf()))
             }
-            entries += entry
+            entryList += entry
             entryMap[entry.id] = entry
         }
     }

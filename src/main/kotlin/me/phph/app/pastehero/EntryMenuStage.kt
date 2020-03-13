@@ -5,6 +5,7 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.event.EventHandler
 import javafx.scene.Scene
 import javafx.scene.control.Button
+import javafx.scene.control.TextField
 import javafx.scene.layout.VBox
 import javafx.stage.Stage
 import javafx.stage.StageStyle
@@ -14,7 +15,10 @@ object EntryMenuStage {
 
     private val api = Paster
 
-    private val vBox = VBox()
+
+    private val searchBox = TextField()
+
+    private val entryBox = VBox()
     private val stage = Stage()
 
     private val updated = SimpleIntegerProperty(0)
@@ -25,8 +29,8 @@ object EntryMenuStage {
             title = "Context Menu"
             width = 300.0   // todo calculate by entry count
             height = 600.0
-            scene = Scene(vBox)
-            initStyle(StageStyle.UNDECORATED)
+            scene = createScene()
+            initStyle(StageStyle.DECORATED)
         }
 
         stage.focusedProperty().addListener { _, _, newValue ->
@@ -43,10 +47,20 @@ object EntryMenuStage {
         }
     }
 
+    private fun createScene(): Scene {
+        searchBox.apply {
+            id = "searchBox"
+            promptText = "Search"
+        }
+        val vBoxTop = VBox(searchBox)
+        val vBox = VBox(vBoxTop, entryBox)
+        return Scene(vBox)
+    }
+
     private fun updateEntries() {
-        vBox.children.clear()
+        entryBox.children.clear()
         for (entry in api.listEntries()) {
-            vBox.children.add(Button(entry.value).apply {
+            entryBox.children.add(Button(entry.value).apply {
                 userData = entry.id
                 onAction = EventHandler { e ->
                     api.setClipboardEntry(e.source.let { it as Button }.userData.let { it as Int })
