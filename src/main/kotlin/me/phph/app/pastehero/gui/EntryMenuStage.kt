@@ -1,8 +1,9 @@
-package me.phph.app.pastehero
+package me.phph.app.pastehero.gui
 
 import javafx.application.Platform
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.event.EventHandler
+import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
@@ -10,14 +11,16 @@ import javafx.scene.control.Tooltip
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.VBox
+import javafx.scene.text.TextAlignment
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import me.phph.app.pastehero.api.Configuration
+import me.phph.app.pastehero.api.Entry
+import me.phph.app.pastehero.api.PasteHero
 import java.awt.MouseInfo
 import java.util.*
 
 object EntryMenuStage {
-
-    private val api = Paster
 
     private val searchBox = TextField()
 
@@ -27,6 +30,10 @@ object EntryMenuStage {
     private val updated = SimpleIntegerProperty(0)
 
     private val searchTimer = Timer()
+
+    // settings
+    private val countPerPage: Int = Configuration.getConfigurationInt(Configuration.CONF_COUNT_PER_PAGE)
+    private var pageNumber = 1
 
     init {
         // init scene
@@ -46,12 +53,14 @@ object EntryMenuStage {
                 }
             }
         }
-        updated.bind(api.updated)
+        updated.bind(PasteHero.updated)
         updated.addListener { _, _, _ ->
             Platform.runLater {
                 updateEntries()
             }
         }
+        // retrieve latest entries
+        updateEntries()
     }
 
     private fun createScene(): Scene {
@@ -87,15 +96,17 @@ object EntryMenuStage {
     }
 
     private fun createEntryButton(entry: Entry): Button {
-        return Button(entry.value).apply {
+        return Button().apply {
+            text = createEntryAbstract(entry.value)
             userData = entry.id
             onAction = EventHandler { e ->
-                api.setClipboardEntry(e.source.let { it as Button }.userData.let { it as Int })
+                PasteHero.setClipboard(e.source.let { it as Button }.userData.let { it as Int })
                 toggleDisplay()
             }
-            maxHeight = 50.0
+            maxHeight = 100.0
             maxWidth = 800.0
-
+            textAlignment = TextAlignment.LEFT
+            alignment = Pos.CENTER_LEFT
             tooltip = Tooltip(entry.value)
 
             // todo NoSuchMethodException setShowDelay()
@@ -106,10 +117,19 @@ object EntryMenuStage {
         }
     }
 
-    private fun updateEntries(searchStr: String = "") {
+    private fun createEntryAbstract(value: String): String {
+        val builder = StringBuilder()
+        val lines = value.split("\n")
+        for (line in lines) {
+            builder.append(line.trim()).append(" ")
+        }
+        return builder.toString()
+    }
+
+    private fun updateEntries(searchString: String = "") {
         entryBox.children.clear()
-        for (entry in api.listEntries()) {
-            if (searchStr != "" && !entry.value.contains(searchStr)) {
+        for (entry in PasteHero.listEntries(countPerPage, pageNumber, searchString)) {
+            if (searchString != "" && !entry.value.contains(searchString)) {
                 continue
             }
             entryBox.children.add(createEntryButton(entry))

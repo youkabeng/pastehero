@@ -1,4 +1,4 @@
-package me.phph.app.pastehero
+package me.phph.app.pastehero.api
 
 import javafx.beans.property.SimpleBooleanProperty
 import org.jnativehook.keyboard.NativeKeyEvent
