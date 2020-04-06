@@ -43,6 +43,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${jfx.version}</version>
+        </dependency>
+
+
+        <dependency>
             <groupId>com.dorkbox</groupId>
             <artifactId>SystemTray</artifactId>
             <version>3.17</version>

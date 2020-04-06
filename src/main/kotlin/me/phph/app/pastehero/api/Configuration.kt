@@ -5,13 +5,13 @@ import java.io.File
 object Configuration {
     private val configurations = mutableMapOf<String, String>()
 
-    const val CONF_VALUE_TRUE = "true"
-    const val CONF_VALUE_FALSE = "false"
+    private const val CONF_VALUE_TRUE = "true"
+    private const val CONF_VALUE_FALSE = "false"
 
+    private const val CONF_CONFIG_NAME = "config_name"
     const val CONF_APP_HOME = "app_home"
     const val CONF_DB_NAME = "db_name"
-    const val CONF_CONFIG_NAME = "config_name"
-    const val CONF_MAX_ENTRIES = "max_entries"
+    const val CONF_MAX_ENTRY_COUNT = "max_entry_count"
     const val CONF_COUNT_PER_PAGE = "count_per_page"
     const val CONF_AUTO_TRIM = "auto_trim"
     const val CONF_AUTO_STRIP = "auto_strip"
@@ -24,7 +24,7 @@ object Configuration {
         configurations[CONF_APP_HOME] = System.getProperty("user.home") + "/" + ".pastehero/"
         configurations[CONF_CONFIG_NAME] = "config"
         configurations[CONF_DB_NAME] = "data.db"
-        configurations[CONF_MAX_ENTRIES] = "100"
+        configurations[CONF_MAX_ENTRY_COUNT] = "100"
         configurations[CONF_COUNT_PER_PAGE] = "20"
         configurations[CONF_AUTO_TRIM] = CONF_VALUE_TRUE
         configurations[CONF_AUTO_STRIP] = CONF_VALUE_FALSE

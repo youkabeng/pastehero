@@ -2,8 +2,10 @@ package me.phph.app.pastehero.api
 
 import com.sun.glass.ui.ClipboardAssistance
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.embed.swing.SwingFXUtils
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
+import java.awt.image.BufferedImage
 
 enum class EntryType {
     STRING,
@@ -16,10 +18,11 @@ enum class EntryType {
     IMAGE
 }
 
-data class Entry(val id: Int = 0,
+data class Entry(var id: Int = -1,
                  val type: EntryType = EntryType.STRING,
-                 val value: String = "",
-                 val updateTs: Int = 0,
+                 var value: String = "",
+                 var image: BufferedImage? = null,
+                 var updateTs: Int = 0,
                  val variants: MutableList<Entry> = mutableListOf())
 
 object PasteHero {
@@ -41,21 +44,28 @@ object PasteHero {
         // cache entries when start
         val count = Storage.count()
         if (count > 0) {
-            val entries = listEntries(count, 1, "")
+            val entries = listEntries("")
             for (entry in entries) {
-                val digest = md5(entry.value)
-                entryValueIdMap[digest] = entry
+                if (entry.type == EntryType.STRING) {
+                    val digest = md5(entry.value)
+                    entryValueIdMap[digest] = entry
+                } else if (entry.type == EntryType.IMAGE) {
+                    val digest = md5(entry.image!!)
+                    entryValueIdMap[digest] = entry
+                }
             }
         }
     }
 
     fun count(): Int {
-        return Storage.count()
+        return Cache.count()
     }
 
-    fun listEntries(countPerPage: Int, pageNumber: Int, searchString: String): List<Entry> {
-        val searchIgnorecase = Configuration.getConfigurationBool(Configuration.CONF_SEARCH_IGNORECASE)
-        return Storage.listEntries(countPerPage, pageNumber).filter { it.value.contains(searchString, searchIgnorecase) }
+    fun listEntries(searchString: String): List<Entry> {
+        val start = 0
+        val end = Cache.count()
+        val searchIgnoreCase = Configuration.getConfigurationBool(Configuration.CONF_SEARCH_IGNORECASE)
+        return Cache.listEntries(start, end).filter { it.value.contains(searchString, searchIgnoreCase) }
     }
 
     fun readClipboard() {
@@ -63,14 +73,24 @@ object PasteHero {
         // to support other format
         if (clipboard.hasString()) {
             val digest = md5(clipboard.string)
-            val entry = entryValueIdMap[digest] ?: Entry(0, EntryType.STRING, clipboard.string, 0, mutableListOf())
-            if (entry.id == 0) Storage.saveEntry(entry) else Storage.updateEntry(entry)
+            val entry = entryValueIdMap[digest] ?: Entry(type = EntryType.STRING, value = clipboard.string)
+            if (entry.id == -1) Storage.saveEntry(entry) else Storage.updateEntry(entry)
             entryValueIdMap[digest] = entry
+        } else if (clipboard.hasImage()) {
+            val bufferedImage = SwingFXUtils.fromFXImage(clipboard.image, null)
+            val digest = md5(bufferedImage)
+            val entry = entryValueIdMap[digest] ?: Entry(type = EntryType.IMAGE, image = bufferedImage)
+            entryValueIdMap[digest] = entry
+            if (entry.id == -1) Storage.saveEntry(entry) else Storage.updateEntry(entry)
         }
     }
 
     fun setClipboard(id: Int) {
         val entry = Storage.listEntryById(id)
-        clipboard.setContent(ClipboardContent().apply { putString(entry.value) })
+        if (entry.type == EntryType.STRING) {
+            clipboard.setContent(ClipboardContent().apply { putString(entry.value) })
+        } else if (entry.type == EntryType.IMAGE) {
+            clipboard.setContent(ClipboardContent().apply { putImage(SwingFXUtils.toFXImage(entry.image!!, null)) })
+        }
     }
 }

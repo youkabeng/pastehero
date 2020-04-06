@@ -2,12 +2,14 @@ package me.phph.app.pastehero.gui
 
 import javafx.application.Platform
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.embed.swing.SwingFXUtils
 import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.scene.control.Tooltip
+import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.VBox
@@ -16,6 +18,7 @@ import javafx.stage.Stage
 import javafx.stage.StageStyle
 import me.phph.app.pastehero.api.Configuration
 import me.phph.app.pastehero.api.Entry
+import me.phph.app.pastehero.api.EntryType
 import me.phph.app.pastehero.api.PasteHero
 import java.awt.MouseInfo
 import java.util.*
@@ -56,11 +59,11 @@ object EntryMenuStage {
         updated.bind(PasteHero.updated)
         updated.addListener { _, _, _ ->
             Platform.runLater {
-                updateEntries()
+                updateDisplay()
             }
         }
         // retrieve latest entries
-        updateEntries()
+        updateDisplay()
     }
 
     private fun createScene(): Scene {
@@ -70,7 +73,7 @@ object EntryMenuStage {
             onKeyPressed = EventHandler {
                 if (it.code == KeyCode.ENTER) {
                     Platform.runLater {
-                        updateEntries(it.source.let { it as TextField }.text.trim())
+                        updateDisplay(it.source.let { it as TextField }.text.trim())
                     }
                 }
             }
@@ -78,7 +81,7 @@ object EntryMenuStage {
                 searchTimer.schedule(object : TimerTask() {
                     override fun run() {
                         Platform.runLater {
-                            updateEntries(newValue)
+                            updateDisplay(newValue)
                         }
                     }
                 }, 500)
@@ -97,17 +100,26 @@ object EntryMenuStage {
 
     private fun createEntryButton(entry: Entry): Button {
         return Button().apply {
-            text = createEntryAbstract(entry.value)
+            if (entry.type == EntryType.STRING) {
+                text = createEntryAbstract(entry.value)
+                textAlignment = TextAlignment.LEFT
+                tooltip = Tooltip(entry.value)
+                maxHeight = 100.0
+            } else if (entry.type == EntryType.IMAGE) {
+                val image = SwingFXUtils.toFXImage(entry.image!!, null)
+                val imageView = ImageView(image)
+                imageView.fitHeight = 100.0
+                imageView.isPreserveRatio = true
+                graphic = imageView
+                maxHeight = 200.0
+            }
+            maxWidth = 800.0
+            alignment = Pos.CENTER_LEFT
             userData = entry.id
             onAction = EventHandler { e ->
                 PasteHero.setClipboard(e.source.let { it as Button }.userData.let { it as Int })
                 toggleDisplay()
             }
-            maxHeight = 100.0
-            maxWidth = 800.0
-            textAlignment = TextAlignment.LEFT
-            alignment = Pos.CENTER_LEFT
-            tooltip = Tooltip(entry.value)
 
             // todo NoSuchMethodException setShowDelay()
 //            tooltip = Tooltip(entry.value).apply {
@@ -126,9 +138,9 @@ object EntryMenuStage {
         return builder.toString()
     }
 
-    private fun updateEntries(searchString: String = "") {
+    private fun updateDisplay(searchString: String = "") {
         entryBox.children.clear()
-        for (entry in PasteHero.listEntries(countPerPage, pageNumber, searchString)) {
+        for (entry in PasteHero.listEntries(searchString)) {
             if (searchString != "" && !entry.value.contains(searchString)) {
                 continue
             }
