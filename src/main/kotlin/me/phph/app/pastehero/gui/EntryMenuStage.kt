@@ -14,6 +14,7 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextAlignment
+import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import me.phph.app.pastehero.api.Configuration
@@ -49,18 +50,18 @@ object EntryMenuStage {
             minHeight = 200.0
             maxHeight = 800.0
             scene = createScene()
-            initStyle(StageStyle.DECORATED)
+            initStyle(StageStyle.UTILITY)
+            initModality(Modality.APPLICATION_MODAL)
             focusedProperty().addListener { _, _, newValue ->
                 if (!newValue) {
                     toggleDisplay()
                 }
             }
+            isAlwaysOnTop = true
         }
         updated.bind(PasteHero.updated)
         updated.addListener { _, _, _ ->
-            Platform.runLater {
-                updateDisplay()
-            }
+            updateDisplay()
         }
         // retrieve latest entries
         updateDisplay()
@@ -115,9 +116,9 @@ object EntryMenuStage {
             }
             maxWidth = 800.0
             alignment = Pos.CENTER_LEFT
-            userData = entry.id
+            userData = entry.md5Digest
             onAction = EventHandler { e ->
-                PasteHero.setClipboard(e.source.let { it as Button }.userData.let { it as Int })
+                PasteHero.setClipboard(e.source.let { it as Button }.userData.let { it as String })
                 toggleDisplay()
             }
 
@@ -161,11 +162,13 @@ object EntryMenuStage {
     }
 
     private fun show() {
+        val location = MouseInfo.getPointerInfo().location
+        stage.x = location.x * 1.0
+        stage.y = location.y * 1.0
         Platform.runLater {
-            val location = MouseInfo.getPointerInfo().location
-            stage.x = location.x * 1.0
-            stage.y = location.y * 1.0
             stage.show()
+            stage.toFront()
+            stage.requestFocus()
         }
     }
 

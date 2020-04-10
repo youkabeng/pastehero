@@ -43,9 +43,15 @@ object Configuration {
         }
         val rcFile = File(homePath + configurations[CONF_CONFIG_NAME])
         if (rcFile.exists()) {
-            readConfiguration(rcFile);
+            readConfiguration(rcFile)
         } else {
-            rcFile.bufferedWriter().use { it.write("# all custom settings goes here\n") }
+            rcFile.bufferedWriter().use {
+                val iterator = configurations.iterator()
+                while (iterator.hasNext()) {
+                    val kv = iterator.next()
+                    it.write("${kv.key} = ${kv.value}\n")
+                }
+            }
         }
     }
 
@@ -53,13 +59,13 @@ object Configuration {
         f.bufferedReader().useLines {
             it.filter { !it.startsWith("#") }.forEach {
                 val kvs = it.split("=")
-                putConfiguration(kvs[0], kvs[1])
+                putConfiguration(kvs[0].trim(), kvs[1].trim())
             }
         }
     }
 
     fun putConfiguration(key: String, value: String) {
-        configurations[key] = value;
+        configurations[key] = value
     }
 
     fun getConfiguration(key: String): String {

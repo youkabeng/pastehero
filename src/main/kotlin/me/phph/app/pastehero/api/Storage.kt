@@ -30,6 +30,7 @@ object Storage {
                 + "type integer,"
                 + "data text,"
                 + "binary blob,"
+                + "md5_digest text,"
                 + "update_ts integer"
                 + ")")
         var statement: Statement? = null
@@ -65,16 +66,15 @@ object Storage {
             statement?.close()
             resultSet?.close()
         }
-        return 0;
+        return 0
     }
-
 
     fun saveEntry(entry: Entry) {
         var statement1: PreparedStatement? = null
         var statement2: Statement? = null
         var resultSet: ResultSet? = null
         try {
-            val sql = "insert into $TABLE_ENTRIES values(NULL,?,?,?,?)"
+            val sql = "insert into $TABLE_ENTRIES values(NULL,?,?,?,?,?)"
             statement1 = getConnection().prepareStatement(sql)
             statement1.setString(1, entry.type.toString())
             if (entry.type == EntryType.STRING) {
@@ -84,8 +84,9 @@ object Storage {
                 statement1.setString(2, null)
                 statement1.setBytes(3, readImage(entry.image!!))
             }
-            val updateTs = System.currentTimeMillis().toInt()
-            statement1.setInt(4, updateTs)
+            statement1.setString(4, entry.md5Digest)
+            val updateTs = System.currentTimeMillis()
+            statement1.setLong(5, updateTs)
             statement1.executeUpdate()
             getConnection().commit()
 
@@ -110,7 +111,7 @@ object Storage {
     fun updateEntry(entry: Entry) {
         var statement: PreparedStatement? = null
         try {
-            val sql = "update $TABLE_ENTRIES set type=?, data=?,binary=?,update_ts=? where id=?"
+            val sql = "update $TABLE_ENTRIES set type=?, data=?, binary=?, md5_digest=?, update_ts=? where id=?"
             statement = getConnection().prepareStatement(sql)
             statement.setString(1, entry.type.toString())
             if (entry.type == EntryType.STRING) {
@@ -120,9 +121,10 @@ object Storage {
                 statement.setString(2, null)
                 statement.setBytes(3, readImage(entry.image!!))
             }
-            val updateTs = System.currentTimeMillis().toInt()
-            statement.setInt(4, updateTs)
-            statement.setInt(5, entry.id)
+            val updateTs = System.currentTimeMillis()
+            statement.setString(4, entry.md5Digest)
+            statement.setLong(5, updateTs)
+            statement.setInt(6, entry.id)
             statement.executeUpdate()
             getConnection().commit()
             entry.updateTs = updateTs
@@ -146,7 +148,8 @@ object Storage {
                         EntryType.valueOf(resultSet.getString(2)),
                         resultSet.getString(3) ?: "",
                         resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
-                        resultSet.getInt(5))
+                        resultSet.getString(5),
+                        resultSet.getLong(6))
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -154,11 +157,11 @@ object Storage {
             statement?.close()
             resultSet?.close()
         }
-        return Entry(-1)
+        return Entry(-1, md5Digest = "")
     }
 
     fun listRecentEntries(count: Int): List<Entry> {
-        val sql = ("select * from $TABLE_ENTRIES"
+        val sql = ("select id,type,data,binary,md5_digest,update_ts from $TABLE_ENTRIES"
                 + " order by update_ts desc limit $count")
         val retList = mutableListOf<Entry>()
         var statement: Statement? = null
@@ -167,11 +170,12 @@ object Storage {
             statement = getConnection().createStatement()
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
-                retList.add(Entry(resultSet.getInt(1),
-                        EntryType.valueOf(resultSet.getString(2)),
-                        resultSet.getString(3) ?: "",
-                        resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
-                        resultSet.getInt(5)))
+                retList.add(Entry(id = resultSet.getInt(1),
+                        type = EntryType.valueOf(resultSet.getString(2)),
+                        value = resultSet.getString(3) ?: "",
+                        image = resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
+                        md5Digest = resultSet.getString(5),
+                        updateTs = resultSet.getLong(6)))
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -199,7 +203,8 @@ object Storage {
                         EntryType.valueOf(resultSet.getString(2)),
                         resultSet.getString(3) ?: "",
                         resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
-                        resultSet.getInt(5)))
+                        resultSet.getString(5),
+                        resultSet.getLong(6)))
             }
         } catch (e: Exception) {
             e.printStackTrace()

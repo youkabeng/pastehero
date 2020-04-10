@@ -6,6 +6,7 @@ import javafx.application.Application
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.Native
+import me.phph.app.pastehero.api.PasteHero
 import org.jnativehook.GlobalScreen
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
@@ -30,7 +31,7 @@ class JFXApp : Application() {
     }
 
     private fun initEntryMenuStage() {
-        entryMenuStage.setOwner(primaryStage!!);
+        entryMenuStage.setOwner(primaryStage!!)
     }
 
     private fun initBindings() {
@@ -49,7 +50,10 @@ class JFXApp : Application() {
             setTooltip(status)
             setImage(JFXApp::class.java.getResource("/images/icon.png"))
             menu.add(MenuItem("Settings", ActionListener { print("show setting test") }))
-            menu.add(MenuItem("Exit", ActionListener { exitProcess(0) }))
+            menu.add(MenuItem("Exit", ActionListener {
+                PasteHero.close()
+                exitProcess(0)
+            }))
         } ?: print("your system is not support system tray")
     }
 

@@ -36,6 +36,6 @@ private fun toHex(byteArray: ByteArray): String {
 
 fun readImage(image: BufferedImage): ByteArray {
     val os = ByteArrayOutputStream()
-    ImageIO.write(image, "png", os);
+    ImageIO.write(image, "png", os)
     return os.toByteArray()
 }

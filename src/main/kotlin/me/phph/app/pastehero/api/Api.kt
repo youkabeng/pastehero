@@ -22,7 +22,8 @@ data class Entry(var id: Int = -1,
                  val type: EntryType = EntryType.STRING,
                  var value: String = "",
                  var image: BufferedImage? = null,
-                 var updateTs: Int = 0,
+                 var md5Digest: String,
+                 var updateTs: Long = 0,
                  val variants: MutableList<Entry> = mutableListOf())
 
 object PasteHero {
@@ -31,9 +32,6 @@ object PasteHero {
 
     val updated = SimpleIntegerProperty(0)
 
-    // value to id map
-    private var entryValueIdMap = mutableMapOf<String, Entry>()
-
     init {
         object : ClipboardAssistance(com.sun.glass.ui.Clipboard.SYSTEM) {
             override fun contentChanged() {
@@ -41,24 +39,6 @@ object PasteHero {
                 updated.value += 1
             }
         }
-        // cache entries when start
-        val count = Storage.count()
-        if (count > 0) {
-            val entries = listEntries("")
-            for (entry in entries) {
-                if (entry.type == EntryType.STRING) {
-                    val digest = md5(entry.value)
-                    entryValueIdMap[digest] = entry
-                } else if (entry.type == EntryType.IMAGE) {
-                    val digest = md5(entry.image!!)
-                    entryValueIdMap[digest] = entry
-                }
-            }
-        }
-    }
-
-    fun count(): Int {
-        return Cache.count()
     }
 
     fun listEntries(searchString: String): List<Entry> {
@@ -71,26 +51,46 @@ object PasteHero {
     fun readClipboard() {
         // todo
         // to support other format
-        if (clipboard.hasString()) {
-            val digest = md5(clipboard.string)
-            val entry = entryValueIdMap[digest] ?: Entry(type = EntryType.STRING, value = clipboard.string)
-            if (entry.id == -1) Storage.saveEntry(entry) else Storage.updateEntry(entry)
-            entryValueIdMap[digest] = entry
-        } else if (clipboard.hasImage()) {
-            val bufferedImage = SwingFXUtils.fromFXImage(clipboard.image, null)
-            val digest = md5(bufferedImage)
-            val entry = entryValueIdMap[digest] ?: Entry(type = EntryType.IMAGE, image = bufferedImage)
-            entryValueIdMap[digest] = entry
-            if (entry.id == -1) Storage.saveEntry(entry) else Storage.updateEntry(entry)
+        val md5Digest: String?
+        when {
+            clipboard.hasString() -> {
+                md5Digest = md5(clipboard.string)
+                if (!Cache.containsEntry(md5Digest)) {
+                    Cache.setEntry(Entry(type = EntryType.STRING, value = clipboard.string, md5Digest = md5Digest))
+                }
+            }
+            clipboard.hasImage() -> {
+                val bufferedImage = SwingFXUtils.fromFXImage(clipboard.image, null)
+                md5Digest = md5(bufferedImage)
+                if (!Cache.containsEntry(md5Digest)) {
+                    Cache.setEntry(Entry(type = EntryType.IMAGE, image = bufferedImage, md5Digest = md5Digest))
+                }
+            }
+            else -> {
+                return
+            }
         }
     }
 
-    fun setClipboard(id: Int) {
-        val entry = Storage.listEntryById(id)
-        if (entry.type == EntryType.STRING) {
-            clipboard.setContent(ClipboardContent().apply { putString(entry.value) })
-        } else if (entry.type == EntryType.IMAGE) {
-            clipboard.setContent(ClipboardContent().apply { putImage(SwingFXUtils.toFXImage(entry.image!!, null)) })
+    fun setClipboard(md5Digest: String) {
+        val entry = Cache.getEntry(md5Digest)
+        entry?.let {
+            it.updateTs = System.currentTimeMillis()
+            when (entry.type) {
+                EntryType.STRING -> {
+                    clipboard.setContent(ClipboardContent().apply { putString(entry.value) })
+                }
+                EntryType.IMAGE -> {
+                    clipboard.setContent(ClipboardContent().apply { putImage(SwingFXUtils.toFXImage(entry.image!!, null)) })
+                }
+                else -> {
+                    return
+                }
+            }
         }
+    }
+
+    fun close() {
+        Cache.saveEntries()
     }
 }
