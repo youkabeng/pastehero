@@ -50,12 +50,17 @@ object EntryMenuStage {
             minHeight = 200.0
             maxHeight = 800.0
             scene = createScene()
-            initStyle(StageStyle.UTILITY)
+            initStyle(StageStyle.DECORATED)
             initModality(Modality.APPLICATION_MODAL)
             focusedProperty().addListener { _, _, newValue ->
                 if (!newValue) {
                     toggleDisplay()
                 }
+            }
+            // todo find a better solution
+            maximizedProperty().addListener { _, _, newValue ->
+                if (newValue)
+                    isMaximized = false
             }
             isAlwaysOnTop = true
         }
@@ -162,10 +167,10 @@ object EntryMenuStage {
     }
 
     private fun show() {
-        val location = MouseInfo.getPointerInfo().location
-        stage.x = location.x * 1.0
-        stage.y = location.y * 1.0
         Platform.runLater {
+            val location = MouseInfo.getPointerInfo().location
+            stage.x = location.x * 1.0
+            stage.y = location.y * 1.0
             stage.show()
             stage.toFront()
             stage.requestFocus()

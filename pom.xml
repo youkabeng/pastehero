@@ -147,6 +147,8 @@
                     <options>
                         <option>-Djdk.gtk.version=2</option>
                         <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</option>
+                        <option>--add-opens</option>
+                        <option>javafx.graphics/com.sun.glass.ui=ALL-UNNAMED</option>
                     </options>
                 </configuration>
             </plugin>
