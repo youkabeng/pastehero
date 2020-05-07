@@ -9,7 +9,9 @@ import javafx.scene.Scene
 import javafx.scene.control.Button
 import javafx.scene.control.TextField
 import javafx.scene.control.Tooltip
+import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.image.WritableImage
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.VBox
@@ -17,12 +19,15 @@ import javafx.scene.text.TextAlignment
 import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
+import javafx.util.Duration
 import me.phph.app.pastehero.api.Configuration
 import me.phph.app.pastehero.api.Entry
 import me.phph.app.pastehero.api.EntryType
 import me.phph.app.pastehero.api.PasteHero
 import java.awt.MouseInfo
+import java.awt.image.BufferedImage
 import java.util.*
+
 
 object EntryMenuStage {
 
@@ -50,17 +55,21 @@ object EntryMenuStage {
             minHeight = 200.0
             maxHeight = 800.0
             scene = createScene()
-            initStyle(StageStyle.DECORATED)
+            initStyle(StageStyle.UTILITY)
             initModality(Modality.APPLICATION_MODAL)
             focusedProperty().addListener { _, _, newValue ->
-                if (!newValue) {
-                    toggleDisplay()
-                }
+                if (newValue)
+                    show()
+                else
+                    hide()
             }
             // todo find a better solution
             maximizedProperty().addListener { _, _, newValue ->
                 if (newValue)
                     isMaximized = false
+            }
+            onCloseRequest = EventHandler {
+                this@EntryMenuStage.hide()
             }
             isAlwaysOnTop = true
         }
@@ -113,6 +122,7 @@ object EntryMenuStage {
                 maxHeight = 100.0
             } else if (entry.type == EntryType.IMAGE) {
                 val image = SwingFXUtils.toFXImage(entry.image!!, null)
+//                val image = convertToFxImage(entry.image)
                 val imageView = ImageView(image)
                 imageView.fitHeight = 100.0
                 imageView.isPreserveRatio = true
@@ -124,15 +134,24 @@ object EntryMenuStage {
             userData = entry.md5Digest
             onAction = EventHandler { e ->
                 PasteHero.setClipboard(e.source.let { it as Button }.userData.let { it as String })
-                toggleDisplay()
+                hide()
             }
-
-            // todo NoSuchMethodException setShowDelay()
-//            tooltip = Tooltip(entry.value).apply {
-//                showDelay = Duration.millis(50.0)
-//                showDuration = Duration.minutes(1.0)
-//            }
+            tooltip = Tooltip(entry.value).apply {
+                showDelay = Duration.millis(50.0)
+                showDuration = Duration.minutes(1.0)
+            }
         }
+    }
+
+    private fun convertToFxImage(image: BufferedImage): Image {
+        val wr = WritableImage(image.width, image.height)
+        val pw = wr.pixelWriter
+        for (x in 0 until image.width) {
+            for (y in 0 until image.height) {
+                pw.setArgb(x, y, image.getRGB(x, y))
+            }
+        }
+        return wr
     }
 
     private fun createEntryAbstract(value: String): String {
@@ -158,29 +177,23 @@ object EntryMenuStage {
         stage.initOwner(owner)
     }
 
-    fun toggleDisplay() {
-        if (stage.isShowing) {
-            hide()
-        } else {
-            show()
-        }
-    }
-
-    private fun show() {
-        Platform.runLater {
-            val location = MouseInfo.getPointerInfo().location
-            stage.x = location.x * 1.0
-            stage.y = location.y * 1.0
-            stage.show()
-            stage.toFront()
-            stage.requestFocus()
-        }
+    fun show() {
+        if (!stage.isShowing)
+            Platform.runLater {
+                val location = MouseInfo.getPointerInfo().location
+                stage.x = location.x * 1.0
+                stage.y = location.y * 1.0
+                stage.show()
+                stage.toFront()
+                stage.requestFocus()
+            }
     }
 
     private fun hide() {
-        Platform.runLater {
-            stage.hide()
-        }
+        if (stage.isShowing)
+            Platform.runLater {
+                stage.hide()
+            }
     }
 
 }

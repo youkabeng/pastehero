@@ -32,7 +32,6 @@ object Native : NativeKeyListener {
             }
         }
         triggered.value = isCtrlPressed && isAltPressed && p0.keyCode == 0x2F
-//        triggered.value = isCtrlPressed
     }
 
     override fun nativeKeyReleased(p0: NativeKeyEvent?) {

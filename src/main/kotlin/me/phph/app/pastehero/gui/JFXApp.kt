@@ -38,7 +38,7 @@ class JFXApp : Application() {
         triggered.bind(native.triggered)
         triggered.addListener { _, _, newValue ->
             if (newValue) {
-                entryMenuStage.toggleDisplay()
+                entryMenuStage.show()
             }
         }
     }
