@@ -6,7 +6,7 @@ import javafx.application.Application
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.Native
-import me.phph.app.pastehero.api.PasteHero
+import me.phph.app.pastehero.api.ClipboardApi
 import org.jnativehook.GlobalScreen
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
@@ -18,27 +18,23 @@ class JFXApp : Application() {
     private val native = Native
 
     private var primaryStage: Stage? = null
-    private val entryMenuStage = EntryMenuStage
+    private var entryMenuStage: EntryMenuStage? = null
 
     override fun start(primaryStage: Stage?) {
         this.primaryStage = primaryStage!!
+        entryMenuStage = EntryMenuStage(this.primaryStage!!)
 
         registerNativeHook()
         initSystemTray()
 
-        initEntryMenuStage()
         initBindings()
-    }
-
-    private fun initEntryMenuStage() {
-        entryMenuStage.setOwner(primaryStage!!)
     }
 
     private fun initBindings() {
         triggered.bind(native.triggered)
         triggered.addListener { _, _, newValue ->
             if (newValue) {
-                entryMenuStage.show()
+                entryMenuStage?.show()
             }
         }
     }
@@ -51,7 +47,7 @@ class JFXApp : Application() {
             setImage(JFXApp::class.java.getResource("/images/icon.png"))
             menu.add(MenuItem("Settings", ActionListener { print("show setting test") }))
             menu.add(MenuItem("Exit", ActionListener {
-                PasteHero.close()
+                ClipboardApi.close()
                 exitProcess(0)
             }))
         } ?: print("your system is not support system tray")

@@ -16,25 +16,23 @@ import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
 import javafx.scene.layout.VBox
 import javafx.scene.text.TextAlignment
-import javafx.stage.Modality
 import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.util.Duration
+import me.phph.app.pastehero.api.ClipboardApi
 import me.phph.app.pastehero.api.Configuration
 import me.phph.app.pastehero.api.Entry
 import me.phph.app.pastehero.api.EntryType
-import me.phph.app.pastehero.api.PasteHero
 import java.awt.MouseInfo
 import java.awt.image.BufferedImage
 import java.util.*
 
 
-object EntryMenuStage {
+class EntryMenuStage(var stage: Stage) {
 
     private val searchBox = TextField()
 
     private val entryBox = VBox()
-    private val stage = Stage()
 
     private val updated = SimpleIntegerProperty(0)
 
@@ -56,7 +54,7 @@ object EntryMenuStage {
             maxHeight = 800.0
             scene = createScene()
             initStyle(StageStyle.UTILITY)
-            initModality(Modality.APPLICATION_MODAL)
+//            initModality(Modality.WINDOW_MODAL)
             focusedProperty().addListener { _, _, newValue ->
                 if (newValue)
                     show()
@@ -73,7 +71,7 @@ object EntryMenuStage {
             }
             isAlwaysOnTop = true
         }
-        updated.bind(PasteHero.updated)
+        updated.bind(ClipboardApi.updated)
         updated.addListener { _, _, _ ->
             updateDisplay()
         }
@@ -133,7 +131,7 @@ object EntryMenuStage {
             alignment = Pos.CENTER_LEFT
             userData = entry.md5Digest
             onAction = EventHandler { e ->
-                PasteHero.setClipboard(e.source.let { it as Button }.userData.let { it as String })
+                ClipboardApi.setClipboard(e.source.let { it as Button }.userData.let { it as String })
                 hide()
             }
             tooltip = Tooltip(entry.value).apply {
@@ -165,7 +163,7 @@ object EntryMenuStage {
 
     private fun updateDisplay(searchString: String = "") {
         entryBox.children.clear()
-        for (entry in PasteHero.listEntries(searchString)) {
+        for (entry in ClipboardApi.listEntries(searchString)) {
             if (searchString != "" && !entry.value.contains(searchString)) {
                 continue
             }
@@ -178,22 +176,22 @@ object EntryMenuStage {
     }
 
     fun show() {
-        if (!stage.isShowing)
-            Platform.runLater {
-                val location = MouseInfo.getPointerInfo().location
-                stage.x = location.x * 1.0
-                stage.y = location.y * 1.0
-                stage.show()
-                stage.toFront()
-                stage.requestFocus()
-            }
+        Platform.runLater {
+            val location = MouseInfo.getPointerInfo().location
+            stage.x = location.x * 1.0
+            stage.y = location.y * 1.0
+            stage.requestFocus()
+            stage.show()
+            stage.isIconified = true
+            stage.isIconified = false
+            searchBox.requestFocus()
+        }
     }
 
     private fun hide() {
-        if (stage.isShowing)
-            Platform.runLater {
-                stage.hide()
-            }
+        Platform.runLater {
+            stage.hide()
+        }
     }
 
 }

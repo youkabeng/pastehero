@@ -21,7 +21,8 @@ object Configuration {
 
     init {
         // default configurations go here
-        configurations[CONF_APP_HOME] = System.getProperty("user.home") + "/" + ".pastehero/"
+        val sep = File.separatorChar
+        configurations[CONF_APP_HOME] = System.getProperty("user.home") + sep + ".pastehero" + sep
         configurations[CONF_CONFIG_NAME] = "config"
         configurations[CONF_DB_NAME] = "data.db"
         configurations[CONF_MAX_ENTRY_COUNT] = "100"
@@ -56,9 +57,11 @@ object Configuration {
     }
 
     private fun readConfiguration(f: File) {
-        f.bufferedReader().useLines {
-            it.filter { !it.startsWith("#") }.forEach {
-                val kvs = it.split("=")
+        f.bufferedReader().useLines { lines ->
+            lines.filter { line ->
+                !line.trim().startsWith("#")
+            }.forEach { line ->
+                val kvs = line.split("=")
                 putConfiguration(kvs[0].trim(), kvs[1].trim())
             }
         }
