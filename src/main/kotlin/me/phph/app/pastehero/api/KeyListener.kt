@@ -4,7 +4,7 @@ import javafx.beans.property.SimpleBooleanProperty
 import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
 
-object Native : NativeKeyListener {
+object KeyListener : NativeKeyListener {
 
     val triggered = SimpleBooleanProperty(false)
 

@@ -46,10 +46,10 @@ class EntryMenuStage(var stage: Stage) {
         // init scene
         stage.apply {
             title = "Context Menu"
-            width = 250.0   // todo calculate by entry count
+            width = 500.0   // todo calculate by entry count
             minWidth = 100.0
             maxWidth = 800.0
-            height = 400.0
+            height = 800.0
             minHeight = 200.0
             maxHeight = 800.0
             scene = createScene()
@@ -67,7 +67,7 @@ class EntryMenuStage(var stage: Stage) {
                     isMaximized = false
             }
             onCloseRequest = EventHandler {
-                this@EntryMenuStage.hide()
+                hide()
             }
             isAlwaysOnTop = true
         }
@@ -125,7 +125,7 @@ class EntryMenuStage(var stage: Stage) {
                 imageView.fitHeight = 100.0
                 imageView.isPreserveRatio = true
                 graphic = imageView
-                maxHeight = 200.0
+                maxHeight = 300.0
             }
             maxWidth = 800.0
             alignment = Pos.CENTER_LEFT

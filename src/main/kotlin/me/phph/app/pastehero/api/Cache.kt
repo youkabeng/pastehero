@@ -15,7 +15,7 @@ class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity +
 
 object Cache {
     private val maxEntryCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ENTRY_COUNT)
-    val cache = LRUCache<String, Entry>(maxEntryCount)
+    private val cache = LRUCache<String, Entry>(maxEntryCount)
 
     init {
         loadData()
@@ -48,6 +48,11 @@ object Cache {
 
     fun setEntry(entry: Entry) {
         cache.set(entry.md5Digest, entry)
+        if(entry.id == -1) {
+            Storage.saveEntry(entry)
+        } else {
+            Storage.updateEntry(entry)
+        }
     }
 
     fun getEntry(md5Digest: String): Entry? {
@@ -58,16 +63,16 @@ object Cache {
         return cache.size
     }
 
-    fun saveEntries() {
-        val iterator = cache.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            if (entry.value.id == -1) {
-                Storage.saveEntry(entry.value)
-            } else {
-                Storage.updateEntry(entry.value)
-            }
-        }
-    }
+//    fun saveEntries() {
+//        val iterator = cache.iterator()
+//        while (iterator.hasNext()) {
+//            val entry = iterator.next().value
+//            if (entry.id == -1) {
+//                Storage.saveEntry(entry)
+//            } else {
+//                Storage.updateEntry(entry)
+//            }
+//        }
+//    }
 
 }

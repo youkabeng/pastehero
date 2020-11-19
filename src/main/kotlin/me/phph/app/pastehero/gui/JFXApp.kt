@@ -5,8 +5,7 @@ import dorkbox.systemTray.SystemTray
 import javafx.application.Application
 import javafx.beans.property.SimpleBooleanProperty
 import javafx.stage.Stage
-import me.phph.app.pastehero.api.Native
-import me.phph.app.pastehero.api.ClipboardApi
+import me.phph.app.pastehero.api.KeyListener
 import org.jnativehook.GlobalScreen
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
@@ -15,7 +14,7 @@ class JFXApp : Application() {
 
     private val triggered = SimpleBooleanProperty(false)
 
-    private val native = Native
+    private val native = KeyListener
 
     private var primaryStage: Stage? = null
     private var entryMenuStage: EntryMenuStage? = null
@@ -47,7 +46,6 @@ class JFXApp : Application() {
             setImage(JFXApp::class.java.getResource("/images/icon.png"))
             menu.add(MenuItem("Settings", ActionListener { print("show setting test") }))
             menu.add(MenuItem("Exit", ActionListener {
-                ClipboardApi.close()
                 exitProcess(0)
             }))
         } ?: print("your system is not support system tray")
@@ -55,6 +53,6 @@ class JFXApp : Application() {
 
     private fun registerNativeHook() {
         GlobalScreen.registerNativeHook()
-        GlobalScreen.addNativeKeyListener(Native)
+        GlobalScreen.addNativeKeyListener(KeyListener)
     }
 }

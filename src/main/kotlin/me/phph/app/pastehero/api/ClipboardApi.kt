@@ -32,6 +32,8 @@ object ClipboardApi {
 
     private val clipboard = Clipboard.getSystemClipboard()
 
+    private val configuration = Configuration
+
     val updated = SimpleIntegerProperty(0)
 
     init {
@@ -51,12 +53,14 @@ object ClipboardApi {
     }
 
     fun readClipboard() {
-        // todo
-        // to support other format
         val md5Digest: String?
         when {
             clipboard.hasString() -> {
-                md5Digest = md5(clipboard.string)
+                var clipboardString = clipboard.string
+                if (configuration.getConfigurationBool(Configuration.CONF_AUTO_TRIM)) {
+                    clipboardString = clipboardString.trim()
+                }
+                md5Digest = md5(clipboardString)
                 if (!Cache.containsEntry(md5Digest)) {
                     Cache.setEntry(Entry(type = EntryType.STRING, value = clipboard.string, md5Digest = md5Digest))
                 }
@@ -93,7 +97,4 @@ object ClipboardApi {
         }
     }
 
-    fun close() {
-        Cache.saveEntries()
-    }
 }

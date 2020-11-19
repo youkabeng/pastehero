@@ -145,7 +145,7 @@
                 <configuration>
                     <mainClass>${main.class}</mainClass>
                     <options>
-                        <option>-Djdk.gtk.version=2</option>
+                        <option>-Djdk.gtk.version=3</option>
                         <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</option>
 <!--                        <option>&#45;&#45;add-opens</option>-->
 <!--                        <option>javafx.graphics/com.sun.glass.ui=ALL-UNNAMED</option>-->
