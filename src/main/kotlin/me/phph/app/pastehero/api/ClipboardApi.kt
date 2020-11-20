@@ -6,8 +6,6 @@ import javafx.embed.swing.SwingFXUtils
 import javafx.scene.input.Clipboard
 import javafx.scene.input.ClipboardContent
 import java.awt.image.BufferedImage
-import java.io.File
-import javax.imageio.ImageIO
 
 enum class EntryType {
     STRING,
@@ -49,7 +47,7 @@ object ClipboardApi {
         val start = 0
         val end = Cache.count()
         val searchIgnoreCase = Configuration.getConfigurationBool(Configuration.CONF_SEARCH_IGNORECASE)
-        return Cache.listEntries(start, end).filter { it.value.contains(searchString, searchIgnoreCase) }
+        return Cache.listEntries(start, end).filter { if (searchString.trim() == "") true else it.value.contains(searchString, searchIgnoreCase) }
     }
 
     fun readClipboard() {
@@ -67,7 +65,6 @@ object ClipboardApi {
             }
             clipboard.hasImage() -> {
                 val bufferedImage = SwingFXUtils.fromFXImage(clipboard.image, null)
-                ImageIO.write(bufferedImage, "png", File("image0.png"))
                 md5Digest = md5(bufferedImage)
                 if (!Cache.containsEntry(md5Digest)) {
                     Cache.setEntry(Entry(type = EntryType.IMAGE, image = bufferedImage, md5Digest = md5Digest))

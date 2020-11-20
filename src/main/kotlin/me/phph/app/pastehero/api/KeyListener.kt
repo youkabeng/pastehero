@@ -5,50 +5,27 @@ import org.jnativehook.keyboard.NativeKeyEvent
 import org.jnativehook.keyboard.NativeKeyListener
 
 object KeyListener : NativeKeyListener {
-
     val triggered = SimpleBooleanProperty(false)
+    private val configuration = Configuration
 
-    private var isCtrlPressed = false
-    private var isShiftPressed = false
-    private var isAltPressed = false
-    private var isSuperPressed = false
+    private val triggeredKeys = mutableSetOf<String>()
+
+    private fun isTriggered(): Boolean {
+        return triggeredKeys.size == configuration.triggerKeys.size && triggeredKeys.containsAll(configuration.triggerKeys)
+    }
 
     override fun nativeKeyTyped(p0: NativeKeyEvent?) {
     }
 
     override fun nativeKeyPressed(p0: NativeKeyEvent?) {
-        when (p0!!.keyCode) {
-            0x1D -> {
-                isCtrlPressed = true
-            }
-            0x38 -> {
-                isAltPressed = true
-            }
-            0x2A -> {
-                isShiftPressed = true
-            }
-            0XE5B -> {
-                isSuperPressed = true
-            }
-        }
-        triggered.value = isCtrlPressed && isAltPressed && p0.keyCode == 0x2F
+        val keyText = NativeKeyEvent.getKeyText(p0!!.keyCode).toLowerCase()
+        triggeredKeys.add(keyText.toLowerCase());
+        triggered.value = isTriggered()
     }
 
     override fun nativeKeyReleased(p0: NativeKeyEvent?) {
-        when (p0!!.keyCode) {
-            0x1D -> {
-                isCtrlPressed = false
-            }
-            0x38 -> {
-                isAltPressed = false
-            }
-            0x2A -> {
-                isShiftPressed = false
-            }
-            0XE5B -> {
-                isSuperPressed = false
-            }
-        }
-        triggered.value = false
+        val keyText = NativeKeyEvent.getKeyText(p0!!.keyCode).toLowerCase()
+        triggeredKeys.remove(keyText)
+        triggered.value = isTriggered()
     }
 }

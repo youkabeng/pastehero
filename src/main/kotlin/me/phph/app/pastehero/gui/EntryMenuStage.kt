@@ -7,6 +7,7 @@ import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.Scene
 import javafx.scene.control.Button
+import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextField
 import javafx.scene.control.Tooltip
 import javafx.scene.image.Image
@@ -32,7 +33,8 @@ class EntryMenuStage(var stage: Stage) {
 
     private val searchBox = TextField()
 
-    private val entryBox = VBox()
+    private var entryBox: VBox? = null
+    private var scrollPane: ScrollPane? = null
 
     private val updated = SimpleIntegerProperty(0)
 
@@ -100,12 +102,18 @@ class EntryMenuStage(var stage: Stage) {
                 }, 500)
             }
         }
+        entryBox = VBox()
+        scrollPane = ScrollPane(entryBox)
+        scrollPane!!.isFitToHeight = true
+        scrollPane!!.isFitToWidth = true
         val vBoxTop = VBox(searchBox)
-        val vBox = VBox(vBoxTop, entryBox)
+        val vBox = VBox(vBoxTop, scrollPane)
         return Scene(vBox).apply {
             addEventHandler(KeyEvent.KEY_PRESSED) {
                 if (it.code == KeyCode.ESCAPE) {
                     hide()
+                    searchBox.text = ""
+                    updateDisplay()
                 }
             }
         }
@@ -133,6 +141,8 @@ class EntryMenuStage(var stage: Stage) {
             onAction = EventHandler { e ->
                 ClipboardApi.setClipboard(e.source.let { it as Button }.userData.let { it as String })
                 hide()
+                searchBox.text = ""
+                updateDisplay()
             }
             tooltip = Tooltip(entry.value).apply {
                 showDelay = Duration.millis(50.0)
@@ -162,17 +172,10 @@ class EntryMenuStage(var stage: Stage) {
     }
 
     private fun updateDisplay(searchString: String = "") {
-        entryBox.children.clear()
+        entryBox!!.children.clear()
         for (entry in ClipboardApi.listEntries(searchString)) {
-            if (searchString != "" && !entry.value.contains(searchString)) {
-                continue
-            }
-            entryBox.children.add(createEntryButton(entry))
+            entryBox!!.children.add(createEntryButton(entry))
         }
-    }
-
-    fun setOwner(owner: Stage) {
-        stage.initOwner(owner)
     }
 
     fun show() {
@@ -185,6 +188,7 @@ class EntryMenuStage(var stage: Stage) {
             stage.isIconified = true
             stage.isIconified = false
             searchBox.requestFocus()
+            scrollPane!!.vvalue = 0.0
         }
     }
 

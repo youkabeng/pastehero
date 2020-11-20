@@ -18,6 +18,7 @@ object Configuration {
     const val CONF_SEARCH_IGNORECASE = "search_ignorecase"
     const val CONF_TRIGGER_SHORTCUT = "trigger_shortcut"
 
+    val triggerKeys = mutableSetOf<String>()
 
     init {
         // default configurations go here
@@ -30,7 +31,7 @@ object Configuration {
         configurations[CONF_AUTO_TRIM] = CONF_VALUE_TRUE
         configurations[CONF_AUTO_STRIP] = CONF_VALUE_FALSE
         configurations[CONF_SEARCH_IGNORECASE] = CONF_VALUE_TRUE
-        configurations[CONF_TRIGGER_SHORTCUT] = "ctrl,alt,v"
+        configurations[CONF_TRIGGER_SHORTCUT] = "ctrl,shift,v"
         setup()
     }
 
@@ -52,6 +53,11 @@ object Configuration {
                     val kv = iterator.next()
                     it.write("${kv.key} = ${kv.value}\n")
                 }
+            }
+        }
+        configurations[CONF_TRIGGER_SHORTCUT]?.let { config ->
+            for (s in config.split(",").map(String::trim)) {
+                triggerKeys.add(s)
             }
         }
     }

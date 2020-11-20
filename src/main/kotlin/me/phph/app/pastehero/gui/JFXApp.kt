@@ -39,7 +39,7 @@ class JFXApp : Application() {
     }
 
     private fun initSystemTray() {
-        SystemTray.DEBUG = true
+//        SystemTray.DEBUG = true
         SystemTray.get().apply {
             status = "Paste Hero"
             setTooltip(status)

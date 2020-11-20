@@ -63,16 +63,4 @@ object Cache {
         return cache.size
     }
 
-//    fun saveEntries() {
-//        val iterator = cache.iterator()
-//        while (iterator.hasNext()) {
-//            val entry = iterator.next().value
-//            if (entry.id == -1) {
-//                Storage.saveEntry(entry)
-//            } else {
-//                Storage.updateEntry(entry)
-//            }
-//        }
-//    }
-
 }
