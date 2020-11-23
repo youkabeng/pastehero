@@ -3,38 +3,44 @@ package me.phph.app.pastehero.gui
 import dorkbox.systemTray.MenuItem
 import dorkbox.systemTray.SystemTray
 import javafx.application.Application
-import javafx.beans.property.SimpleBooleanProperty
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.KeyListener
+import me.phph.app.pastehero.dbus.DBusImpl
+import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.jnativehook.GlobalScreen
 import java.awt.event.ActionListener
 import kotlin.system.exitProcess
 
 class JFXApp : Application() {
 
-    private val triggered = SimpleBooleanProperty(false)
+    private val triggered = SimpleIntegerProperty(0)
 
     private val native = KeyListener
 
+    private val dbus = DBusImpl()
+
     private var primaryStage: Stage? = null
-    private var entryMenuStage: EntryMenuStage? = null
+    private var mainStage: MainStage? = null
 
     override fun start(primaryStage: Stage?) {
         this.primaryStage = primaryStage!!
-        entryMenuStage = EntryMenuStage(this.primaryStage!!)
+        mainStage = MainStage(this.primaryStage!!)
 
-        registerNativeHook()
+//        registerNativeHook()
+
         initSystemTray()
 
         initBindings()
+
+        initDBus()
     }
 
     private fun initBindings() {
-        triggered.bind(native.triggered)
-        triggered.addListener { _, _, newValue ->
-            if (newValue) {
-                entryMenuStage?.show()
-            }
+//        triggered.bind(native.triggered)
+        triggered.bind(dbus.triggered)
+        triggered.addListener { _, _, _ ->
+            mainStage?.show()
         }
     }
 
@@ -54,5 +60,17 @@ class JFXApp : Application() {
     private fun registerNativeHook() {
         GlobalScreen.registerNativeHook()
         GlobalScreen.addNativeKeyListener(KeyListener)
+    }
+
+    private fun initDBus() {
+        var conn: DBusConnection? = null
+        try {
+            conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION)
+            conn?.requestBusName("me.phph.app.pastehero")
+            conn?.exportObject("/pastehero", dbus)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            conn?.disconnect()
+        }
     }
 }

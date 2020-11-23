@@ -13,7 +13,7 @@
         <kotlin.version>1.3.72</kotlin.version>
         <kotlin.compiler.incremental>true</kotlin.compiler.incremental>
         <kotlin.coroutins.version>1.3.3</kotlin.coroutins.version>
-        <main.class>me.phph.app.pastehero.AppKt</main.class>
+        <main.class>me.phph.app.pastehero.App</main.class>
     </properties>
 
     <dependencies>
@@ -46,6 +46,12 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
             <version>${jfx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.hypfvieh</groupId>
+            <artifactId>dbus-java</artifactId>
+            <version>3.2.3</version>
         </dependency>
 
         <dependency>
@@ -90,30 +96,30 @@
                     </execution>
                 </executions>
             </plugin>
-<!--            <plugin>-->
-<!--                <groupId>com.mycila</groupId>-->
-<!--                <artifactId>license-maven-plugin</artifactId>-->
-<!--                <version>3.0</version>-->
-<!--                <configuration>-->
-<!--                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>-->
-<!--                    <properties>-->
-<!--                        <owner>Heng</owner>-->
-<!--                        <email>phph1990@outlook.com</email>-->
-<!--                    </properties>-->
-<!--                    <excludes>-->
-<!--                        <exclude>**/README</exclude>-->
-<!--                        <exclude>src/test/resources/**</exclude>-->
-<!--                        <exclude>src/main/resources/**</exclude>-->
-<!--                    </excludes>-->
-<!--                </configuration>-->
-<!--                <executions>-->
-<!--                    <execution>-->
-<!--                        <goals>-->
-<!--                            <goal>check</goal>-->
-<!--                        </goals>-->
-<!--                    </execution>-->
-<!--                </executions>-->
-<!--            </plugin>-->
+            <!--            <plugin>-->
+            <!--                <groupId>com.mycila</groupId>-->
+            <!--                <artifactId>license-maven-plugin</artifactId>-->
+            <!--                <version>3.0</version>-->
+            <!--                <configuration>-->
+            <!--                    <header>com/mycila/maven/plugin/license/templates/APACHE-2.txt</header>-->
+            <!--                    <properties>-->
+            <!--                        <owner>Heng</owner>-->
+            <!--                        <email>phph1990@outlook.com</email>-->
+            <!--                    </properties>-->
+            <!--                    <excludes>-->
+            <!--                        <exclude>**/README</exclude>-->
+            <!--                        <exclude>src/test/resources/**</exclude>-->
+            <!--                        <exclude>src/main/resources/**</exclude>-->
+            <!--                    </excludes>-->
+            <!--                </configuration>-->
+            <!--                <executions>-->
+            <!--                    <execution>-->
+            <!--                        <goals>-->
+            <!--                            <goal>check</goal>-->
+            <!--                        </goals>-->
+            <!--                    </execution>-->
+            <!--                </executions>-->
+            <!--            </plugin>-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
@@ -147,8 +153,8 @@
                     <options>
                         <option>-Djdk.gtk.version=3</option>
                         <option>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</option>
-<!--                        <option>&#45;&#45;add-opens</option>-->
-<!--                        <option>javafx.graphics/com.sun.glass.ui=ALL-UNNAMED</option>-->
+                        <!--                        <option>&#45;&#45;add-opens</option>-->
+                        <!--                        <option>javafx.graphics/com.sun.glass.ui=ALL-UNNAMED</option>-->
                     </options>
                 </configuration>
             </plugin>

@@ -1,5 +1,6 @@
 package me.phph.app.pastehero.api
 
+import javafx.stage.Stage
 import java.io.File
 
 object Configuration {
@@ -19,6 +20,8 @@ object Configuration {
     const val CONF_TRIGGER_SHORTCUT = "trigger_shortcut"
 
     val triggerKeys = mutableSetOf<String>()
+
+    var stage: Stage? = null;
 
     init {
         // default configurations go here

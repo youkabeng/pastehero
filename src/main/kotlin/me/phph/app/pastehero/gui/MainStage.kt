@@ -29,7 +29,7 @@ import java.awt.image.BufferedImage
 import java.util.*
 
 
-class EntryMenuStage(var stage: Stage) {
+class MainStage(var stage: Stage) {
 
     private val searchBox = TextField()
 
@@ -85,10 +85,10 @@ class EntryMenuStage(var stage: Stage) {
         searchBox.apply {
             id = "searchBox"
             promptText = "Search"
-            onKeyPressed = EventHandler {
-                if (it.code == KeyCode.ENTER) {
+            onKeyPressed = EventHandler { ev ->
+                if (ev.code == KeyCode.ENTER) {
                     Platform.runLater {
-                        updateDisplay(it.source.let { it as TextField }.text.trim())
+                        updateDisplay(ev.source.let { it as TextField }.text.trim())
                     }
                 }
             }
@@ -126,6 +126,10 @@ class EntryMenuStage(var stage: Stage) {
                 textAlignment = TextAlignment.LEFT
                 tooltip = Tooltip(entry.value)
                 maxHeight = 100.0
+                tooltip = Tooltip(entry.value).apply {
+                    showDelay = Duration.millis(50.0)
+                    showDuration = Duration.minutes(1.0)
+                }
             } else if (entry.type == EntryType.IMAGE) {
                 val image = SwingFXUtils.toFXImage(entry.image!!, null)
 //                val image = convertToFxImage(entry.image)
@@ -143,10 +147,6 @@ class EntryMenuStage(var stage: Stage) {
                 hide()
                 searchBox.text = ""
                 updateDisplay()
-            }
-            tooltip = Tooltip(entry.value).apply {
-                showDelay = Duration.millis(50.0)
-                showDuration = Duration.minutes(1.0)
             }
         }
     }
