@@ -16,16 +16,16 @@ class JFXApp : Application() {
 
     private val triggered = SimpleIntegerProperty(0)
 
-    private val native = KeyListener
+    private val nativeKeyListener = KeyListener
 
     private val dbus = DBusImpl()
 
     private var primaryStage: Stage? = null
-    private var mainStage: MainStage? = null
+    private var mainPopupWindow: MainPopupWindow? = null
 
     override fun start(primaryStage: Stage?) {
         this.primaryStage = primaryStage!!
-        mainStage = MainStage(this.primaryStage!!)
+        mainPopupWindow = MainPopupWindow(this.primaryStage!!)
 
 //        registerNativeHook()
 
@@ -40,7 +40,7 @@ class JFXApp : Application() {
 //        triggered.bind(native.triggered)
         triggered.bind(dbus.triggered)
         triggered.addListener { _, _, _ ->
-            mainStage?.show()
+            mainPopupWindow?.show()
         }
     }
 
@@ -50,7 +50,7 @@ class JFXApp : Application() {
             status = "Paste Hero"
             setTooltip(status)
             setImage(JFXApp::class.java.getResource("/images/icon.png"))
-            menu.add(MenuItem("Settings", ActionListener { print("show setting test") }))
+//            menu.add(MenuItem("Settings", ActionListener { print("show setting test") }))
             menu.add(MenuItem("Exit", ActionListener {
                 exitProcess(0)
             }))
@@ -66,8 +66,10 @@ class JFXApp : Application() {
         var conn: DBusConnection? = null
         try {
             conn = DBusConnection.getConnection(DBusConnection.DBusBusType.SESSION)
-            conn?.requestBusName("me.phph.app.pastehero")
-            conn?.exportObject("/pastehero", dbus)
+            conn?.run {
+                requestBusName("me.phph.app.pastehero")
+                exportObject("/pastehero", dbus)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             conn?.disconnect()

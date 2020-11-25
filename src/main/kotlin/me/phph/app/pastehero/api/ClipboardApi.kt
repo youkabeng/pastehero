@@ -47,7 +47,9 @@ object ClipboardApi {
         val start = 0
         val end = Cache.count()
         val searchIgnoreCase = Configuration.getConfigurationBool(Configuration.CONF_SEARCH_IGNORECASE)
-        return Cache.listEntries(start, end).filter { if (searchString.trim() == "") true else it.value.contains(searchString, searchIgnoreCase) }
+        return ((if (searchString.isEmpty()) arrayListOf() else Cache.defaultEntries.map { it.value }) + Cache.listEntries(start, end)).filter {
+            if (searchString.isEmpty()) true else it.value.contains(searchString, searchIgnoreCase)
+        }
     }
 
     fun readClipboard() {
@@ -61,6 +63,8 @@ object ClipboardApi {
                 md5Digest = md5(clipboardString)
                 if (!Cache.containsEntry(md5Digest)) {
                     Cache.setEntry(Entry(type = EntryType.STRING, value = clipboard.string, md5Digest = md5Digest))
+                } else if (Cache.defaultEntries.containsKey(md5Digest)) {
+                    Cache.defaultEntries[md5Digest]?.let { Cache.setEntry(it) }
                 }
             }
             clipboard.hasImage() -> {

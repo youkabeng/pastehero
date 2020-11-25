@@ -29,7 +29,7 @@ import java.awt.image.BufferedImage
 import java.util.*
 
 
-class MainStage(var stage: Stage) {
+class MainPopupWindow(var stage: Stage) {
 
     private val searchBox = TextField()
 
@@ -48,12 +48,12 @@ class MainStage(var stage: Stage) {
         // init scene
         stage.apply {
             title = "Context Menu"
-            width = 500.0   // todo calculate by entry count
+            width = 400.0   // todo calculate by entry count
             minWidth = 100.0
-            maxWidth = 800.0
-            height = 800.0
+            maxWidth = 400.0
+            height = 600.0
             minHeight = 200.0
-            maxHeight = 800.0
+            maxHeight = 600.0
             scene = createScene()
             initStyle(StageStyle.UTILITY)
 //            initModality(Modality.WINDOW_MODAL)
@@ -148,6 +148,7 @@ class MainStage(var stage: Stage) {
                 searchBox.text = ""
                 updateDisplay()
             }
+            stylesheets += Thread.currentThread().contextClassLoader.getResource("css/btn.css")!!.toExternalForm()
         }
     }
 
@@ -173,8 +174,13 @@ class MainStage(var stage: Stage) {
 
     private fun updateDisplay(searchString: String = "") {
         entryBox!!.children.clear()
+        var count = 0;
         for (entry in ClipboardApi.listEntries(searchString)) {
-            entryBox!!.children.add(createEntryButton(entry))
+            val button = createEntryButton(entry)
+            entryBox!!.children.add(button)
+            count++;
+            if (count == countPerPage)
+                break;
         }
     }
 

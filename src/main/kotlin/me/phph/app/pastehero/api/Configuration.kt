@@ -19,6 +19,9 @@ object Configuration {
     const val CONF_SEARCH_IGNORECASE = "search_ignorecase"
     const val CONF_TRIGGER_SHORTCUT = "trigger_shortcut"
 
+    private const val DEFAULT_ENTRIES = "default_entries"
+    const val SPECIAL_COMMENT = "##########"
+
     val triggerKeys = mutableSetOf<String>()
 
     var stage: Stage? = null;
@@ -39,7 +42,7 @@ object Configuration {
     }
 
     private fun setup() {
-        val homePath = configurations[CONF_APP_HOME]!!
+        val homePath = getHomePath()
         val homeDir = File(homePath)
         if (!homeDir.exists()) {
             if (!homeDir.mkdirs()) {
@@ -50,11 +53,11 @@ object Configuration {
         if (rcFile.exists()) {
             readConfiguration(rcFile)
         } else {
-            rcFile.bufferedWriter().use {
+            rcFile.writer().use { writer ->
                 val iterator = configurations.iterator()
                 while (iterator.hasNext()) {
                     val kv = iterator.next()
-                    it.write("${kv.key} = ${kv.value}\n")
+                    writer.write("${kv.key} = ${kv.value}\n")
                 }
             }
         }
@@ -63,6 +66,14 @@ object Configuration {
                 triggerKeys.add(s)
             }
         }
+        // defaults list
+        val defaultEntriesFile = File(homePath + DEFAULT_ENTRIES)
+        if (!defaultEntriesFile.exists()) {
+            defaultEntriesFile.writer().use { writer ->
+                writer.write("$SPECIAL_COMMENT your default entries go here")
+            }
+        }
+
     }
 
     private fun readConfiguration(f: File) {
@@ -74,6 +85,19 @@ object Configuration {
                 putConfiguration(kvs[0].trim(), kvs[1].trim())
             }
         }
+    }
+
+    private fun getHomePath(): String {
+        var homePath = configurations[CONF_APP_HOME]!!
+        if (!homePath.endsWith(File.separatorChar)) {
+            homePath = homePath + File.separatorChar
+        }
+        return homePath
+    }
+
+    fun getDefaultEntryFilePath(): String {
+        val homePath = getHomePath()
+        return homePath + DEFAULT_ENTRIES
     }
 
     fun putConfiguration(key: String, value: String) {
