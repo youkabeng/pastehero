@@ -61,10 +61,16 @@ object ClipboardApi {
                     clipboardString = clipboardString.trim()
                 }
                 md5Digest = md5(clipboardString)
-                if (!Cache.containsEntry(md5Digest)) {
-                    Cache.setEntry(Entry(type = EntryType.STRING, value = clipboard.string, md5Digest = md5Digest))
-                } else if (Cache.defaultEntries.containsKey(md5Digest)) {
-                    Cache.defaultEntries[md5Digest]?.let { Cache.setEntry(it) }
+                when {
+                    Cache.defaultEntries.containsKey(md5Digest) -> {
+                        Cache.defaultEntries[md5Digest]?.let { Cache.setEntry(it) }
+                    }
+                    Cache.containsEntry(md5Digest) -> {
+                        Cache.getEntry(md5Digest)?.let(Cache::setEntry)
+                    }
+                    else -> {
+                        Cache.setEntry(Entry(type = EntryType.STRING, value = clipboard.string, md5Digest = md5Digest))
+                    }
                 }
             }
             clipboard.hasImage() -> {

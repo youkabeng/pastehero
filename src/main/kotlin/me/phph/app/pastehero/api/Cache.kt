@@ -27,9 +27,6 @@ object Cache {
 
     private fun loadData() {
         val entryList = Storage.listRecentEntries(maxEntryCount).reversed()
-        for (entry in entryList) {
-            cache.set(entry.md5Digest, entry)
-        }
         File(defaultEntryFilePath).useLines { lines ->
             lines.map(String::trim).forEach { line ->
                 if (!line.startsWith(Configuration.SPECIAL_COMMENT) && line.isNotEmpty()) {
@@ -37,6 +34,11 @@ object Cache {
                     val entry = Entry(-2, EntryType.STRING, line.trim(), null, md5)
                     defaultEntries[md5] = entry
                 }
+            }
+        }
+        for (entry in entryList) {
+            if (!defaultEntries.containsKey(entry.md5Digest)) {
+                cache.set(entry.md5Digest, entry)
             }
         }
     }

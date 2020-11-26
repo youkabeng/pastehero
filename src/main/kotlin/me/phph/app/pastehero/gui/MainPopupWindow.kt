@@ -49,11 +49,11 @@ class MainPopupWindow(var stage: Stage) {
         stage.apply {
             title = "Context Menu"
             width = 400.0   // todo calculate by entry count
-            minWidth = 100.0
-            maxWidth = 400.0
+//            minWidth = 100.0
+//            maxWidth = 400.0
             height = 600.0
-            minHeight = 200.0
-            maxHeight = 600.0
+//            minHeight = 200.0
+//            maxHeight = 600.0
             scene = createScene()
             initStyle(StageStyle.UTILITY)
 //            initModality(Modality.WINDOW_MODAL)
