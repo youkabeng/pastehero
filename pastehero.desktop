@@ -1,0 +1,14 @@
+[Desktop Entry]
+Comment=
+Exec=java -Xms{{XMS}} -Xmx{{XMX}} -XX:+UseG1GC -Djdk.gtk.version=3 -jar pastehero-{{VERSION}}.jar
+Icon=pastehero
+Name=pastehero
+NoDisplay=false
+Path[$e]=
+StartWMClass=pastehero
+StartupNotify=true
+Terminal=0
+TerminalOptions=
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

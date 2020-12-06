@@ -1,22 +1,22 @@
-.button {
+TextFlow {
     -fx-background-color: #f4f4f2;
-    -fx-border-color: #f4f4f2;
+    -fx-border-color: #bbbfca;
     -fx-font-size: 12px;
 }
 
-.button:hover {
+TextFlow:hover {
     -fx-background-color: #bbbfca;
     -fx-border-color: #bbbfca;
     -fx-font-size: 12px;
 }
 
-.button:focused {
-    -fx-background-color: #e8e8e8;
+TextFlow:focused {
+    -fx-background-color: #bbbfca;
     -fx-border-color: #bbbfca;
     -fx-font-size: 12px;
 }
 
-.button:selected {
+TextFlow:selected {
     -fx-background-color: #bbbfca;
     -fx-border-color: #bbbfca;
     -fx-font-size: 12px;

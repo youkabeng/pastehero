@@ -2,7 +2,10 @@ package me.phph.app.pastehero.api
 
 import java.io.File
 
-
+/**
+ * LRU cache that holds [capacity] entries in max
+ * If the cache is full, the earliest entry will be deleted
+ */
 class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity + 1, 1.0f, true) {
 
     override fun removeEldestEntry(eldest: MutableMap.MutableEntry<K, V>?): Boolean {
@@ -15,6 +18,9 @@ class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity +
 
 }
 
+/**
+ * A wrapper class for LRCCache
+ */
 object Cache {
     private val maxEntryCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ENTRY_COUNT)
     private val defaultEntryFilePath = Configuration.getDefaultEntryFilePath()
@@ -25,6 +31,10 @@ object Cache {
         loadData()
     }
 
+    /**
+     * Load default entries first and then the regular entries
+     * The id of a default entry is hard coded to -2 for now
+     */
     private fun loadData() {
         val entryList = Storage.listRecentEntries(maxEntryCount).reversed()
         File(defaultEntryFilePath).useLines { lines ->
@@ -49,8 +59,15 @@ object Cache {
         val listIterator = ArrayList<Entry>(cache.values).listIterator(count())
         while (listIterator.hasPrevious()) {
             val entry = listIterator.previous()
-            if (i in start until end) {
-                defaultEntries[entry.md5Digest]?.also { retList.add(it) } ?: run { retList.add(entry) }
+            if(entry.type == EntryType.STRING) {
+                if (entry.value.isEmpty()) {
+                    continue
+                }
+                if (i in start until end) {
+                    defaultEntries[entry.md5Digest]?.also { retList.add(it) } ?: run { retList.add(entry) }
+                }
+            } else {
+                retList.add(entry)
             }
             i++
         }

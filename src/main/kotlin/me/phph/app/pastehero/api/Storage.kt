@@ -75,18 +75,14 @@ object Storage {
         var resultSet: ResultSet? = null
         try {
             val sql = "insert into $TABLE_ENTRIES values(NULL,?,?,?,?,?)"
-            statement1 = getConnection().prepareStatement(sql)
-            statement1.setString(1, entry.type.toString())
-            if (entry.type == EntryType.STRING) {
-                statement1.setString(2, entry.value)
-                statement1.setString(3, null)
-            } else if (entry.type == EntryType.IMAGE) {
-                statement1.setString(2, null)
-                statement1.setBytes(3, readImage(entry.image!!))
-            }
-            statement1.setString(4, entry.md5Digest)
             val updateTs = System.currentTimeMillis()
-            statement1.setLong(5, updateTs)
+            statement1 = getConnection().prepareStatement(sql).apply {
+                setString(1, entry.type.toString())
+                setString(2, if (entry.value.isNotEmpty()) entry.value else null)
+                setBytes(3, entry.image?.let(::readImage))
+                setString(4, entry.md5Digest)
+                setLong(5, updateTs)
+            }
             statement1.executeUpdate()
             getConnection().commit()
 
@@ -144,12 +140,14 @@ object Storage {
             statement = getConnection().createStatement()
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
-                return Entry(resultSet.getInt(1),
-                        EntryType.valueOf(resultSet.getString(2)),
-                        resultSet.getString(3) ?: "",
-                        resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
-                        resultSet.getString(5),
-                        resultSet.getLong(6))
+                return Entry(
+                    resultSet.getInt(1),
+                    EntryType.valueOf(resultSet.getString(2)),
+                    resultSet.getString(3) ?: "",
+                    resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
+                    resultSet.getString(5),
+                    resultSet.getLong(6)
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -170,12 +168,16 @@ object Storage {
             statement = getConnection().createStatement()
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
-                retList.add(Entry(id = resultSet.getInt(1),
+                retList.add(
+                    Entry(
+                        id = resultSet.getInt(1),
                         type = EntryType.valueOf(resultSet.getString(2)),
                         value = resultSet.getString(3) ?: "",
                         image = resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
                         md5Digest = resultSet.getString(5),
-                        updateTs = resultSet.getLong(6)))
+                        updateTs = resultSet.getLong(6)
+                    )
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -199,12 +201,16 @@ object Storage {
             statement = getConnection().createStatement()
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
-                retList.add(Entry(resultSet.getInt(1),
+                retList.add(
+                    Entry(
+                        resultSet.getInt(1),
                         EntryType.valueOf(resultSet.getString(2)),
                         resultSet.getString(3) ?: "",
                         resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
                         resultSet.getString(5),
-                        resultSet.getLong(6)))
+                        resultSet.getLong(6)
+                    )
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()
