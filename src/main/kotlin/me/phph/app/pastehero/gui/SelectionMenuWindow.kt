@@ -5,14 +5,18 @@ import javafx.beans.property.SimpleIntegerProperty
 import javafx.embed.swing.SwingFXUtils
 import javafx.event.EventHandler
 import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.scene.Scene
+import javafx.scene.control.Button
 import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextField
 import javafx.scene.control.Tooltip
 import javafx.scene.image.ImageView
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.layout.HBox
 import javafx.scene.layout.Priority
+import javafx.scene.layout.StackPane
 import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.text.Text
@@ -161,12 +165,31 @@ class SelectionMenuWindow(var stage: Stage) {
             val entries = ClipboardApi.listEntries(searchString)
             val size = entries.size
             for (entry in entries) {
-                val item = createEntryTextFlow(entry, searchString, count)
+//                val item = createEntryTextFlow(entry, searchString, count)
+                val item = createEntry(entry, searchString, count)
                 children.add(item)
                 count++
                 if (count == countPerPage || count == size)
                     break
             }
+        }
+    }
+
+    private fun createEntry(entry: Entry, searchString: String, order: Int): StackPane {
+        return StackPane().apply {
+            val textFlow = createEntryTextFlow(entry, searchString, order)
+            children.add(textFlow)
+            children.add(HBox().apply {
+                // show variants icon
+                children.add(Button("TS").apply { prefWidth = 20.0;prefHeight = 20.0;isFocusTraversable = false })
+                children.add(Button("TXT").apply { prefWidth = 20.0;prefHeight = 20.0;isFocusTraversable = false })
+                children.add(Button("JSON").apply { prefWidth = 20.0; prefHeight = 20.0;isFocusTraversable = false })
+                // show delete icon
+                children.add(Button("Delete").apply { prefWidth = 20.0; prefHeight = 20.0;isFocusTraversable = false })
+                alignment = Pos.BOTTOM_RIGHT
+                isPickOnBounds = false
+//                visibleProperty().bind(textFlow.focusedProperty())
+            })
         }
     }
 
@@ -183,7 +206,7 @@ class SelectionMenuWindow(var stage: Stage) {
                 }
                 children.addAll(
                     Text("["),
-                    Text("$v").apply { fill = Color.GRAY; style = "-fx-underline: true" },
+                    Text("$v").apply { fill = Color.RED; style = "-fx-underline: true" },
                     Text("]"),
                     Text("[$type] ")
                 )
@@ -241,12 +264,18 @@ class SelectionMenuWindow(var stage: Stage) {
                         fitHeight = 100.0
                         isPreserveRatio = true
                     })
-                    maxHeight = 300.0
+                    maxHeight = 150.0
                     Tooltip.install(
                         this,
                         Tooltip().apply {
                             graphic = ImageView(SwingFXUtils.toFXImage(entry.image!!, null)).apply {
-                                fitHeight = 300.0
+                                val imgWidth = entry.image!!.width
+                                val imgHeight = entry.image!!.height
+                                if (imgWidth > imgHeight) {
+                                    fitWidth = 900.0
+                                } else {
+                                    fitHeight = 900.0
+                                }
                                 isPreserveRatio = true
                             }
                             showDelay = Duration.millis(300.0)
@@ -262,6 +291,7 @@ class SelectionMenuWindow(var stage: Stage) {
             onMouseClicked = EventHandler { ev ->
                 pickEntry(ev.source.let { it as TextFlow }.userData as String)
             }
+            onMouseEntered = EventHandler { requestFocus() }
             onKeyPressed = EventHandler { ev ->
                 if (ev.code == KeyCode.ENTER) {
                     pickEntry(ev.source.let { it as TextFlow }.userData as String)

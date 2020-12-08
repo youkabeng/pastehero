@@ -5,6 +5,7 @@ import javafx.application.Application
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.KeyListener
+import me.phph.app.pastehero.api.Storage
 import me.phph.app.pastehero.dbus.DBusImpl
 import org.freedesktop.dbus.connections.impl.DBusConnection
 import org.freedesktop.dbus.exceptions.DBusException
@@ -55,7 +56,12 @@ class App : Application() {
         if (SystemTray.isSupported()) {
             val systemTray = SystemTray.getSystemTray()
             val popup = PopupMenu()
-            popup.add(MenuItem("Quit").apply { addActionListener { exitProcess(0) } })
+            popup.add(MenuItem("Quit").apply {
+                addActionListener {
+                    Storage.cleanup()
+                    exitProcess(0)
+                }
+            })
             val trayIcon = TrayIcon(createImage())
             trayIcon.popupMenu = popup
             trayIcon.isImageAutoSize = true

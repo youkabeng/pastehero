@@ -26,7 +26,7 @@
 
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
-            <artifactId>kotlin-stdlib</artifactId>
+            <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
 
@@ -54,11 +54,11 @@
             <version>3.2.3</version>
         </dependency>
 
-<!--        <dependency>-->
-<!--            <groupId>com.dorkbox</groupId>-->
-<!--            <artifactId>SystemTray</artifactId>-->
-<!--            <version>3.17</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>com.dorkbox</groupId>-->
+        <!--            <artifactId>SystemTray</artifactId>-->
+        <!--            <version>3.17</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>com.github.tulskiy</groupId>
