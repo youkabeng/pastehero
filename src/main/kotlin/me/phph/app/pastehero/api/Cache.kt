@@ -59,7 +59,7 @@ object Cache {
         val listIterator = ArrayList<Entry>(cache.values).listIterator(count())
         while (listIterator.hasPrevious()) {
             val entry = listIterator.previous()
-            if(entry.type == EntryType.STRING) {
+            if (entry.type == EntryType.STRING) {
                 if (entry.value.isEmpty()) {
                     continue
                 }
@@ -89,6 +89,13 @@ object Cache {
 
     fun getEntry(md5Digest: String): Entry? {
         return cache[md5Digest] ?: defaultEntries[md5Digest]
+    }
+
+    fun deleteEntry(md5Digest: String) {
+        cache[md5Digest]?.let { entry ->
+            cache.remove(md5Digest)
+            Storage.deleteEntry(entry.id)
+        }
     }
 
     fun count(): Int {

@@ -25,6 +25,7 @@ import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.util.Duration
 import me.phph.app.pastehero.api.*
+import org.kordamp.ikonli.javafx.FontIcon
 import java.awt.MouseInfo
 import java.util.*
 
@@ -67,40 +68,33 @@ class SelectionMenuWindow(var stage: Stage) {
                     }
                 }, 500)
             }
+            focusedProperty().addListener { _, _, newValue ->
+                if (newValue) {
+                    showEntryButton("")
+                }
+            }
+            onMouseEntered = EventHandler { requestFocus() }
         }
 
         // settings for upper vbox
-        upperVBox.apply {
-            children.add(searchTextField)
-        }
+        upperVBox.children.add(searchTextField)
 
         // settings for selection vbox and scroll pane
         selectionScrollPane.apply {
             content = selectionVBox
             isFitToWidth = true
-            isFitToHeight
-        }
-
-        // settings for lower vbox
-        lowerVBox.apply {
-            children.add(selectionScrollPane)
-        }
-
-        // bind selectionScrollPane's width and height to lowerVBox
-        selectionScrollPane.apply {
-            prefWidthProperty().bind(lowerVBox.widthProperty())
-            prefHeightProperty().bind(lowerVBox.heightProperty())
+            isFitToHeight = true
         }
         VBox.setVgrow(selectionVBox, Priority.ALWAYS)
+        VBox.setVgrow(selectionScrollPane, Priority.ALWAYS)
 
-        // settings for top vbox
-        topVBox.apply {
-            children.add(upperVBox)
-            children.add(lowerVBox)
-            prefWidthProperty().bind(stage.widthProperty())
-            prefHeightProperty().bind(stage.heightProperty())
-        }
+        // settings for lower vbox
+        lowerVBox.children.add(selectionScrollPane)
         VBox.setVgrow(lowerVBox, Priority.ALWAYS)
+
+        topVBox.children.addAll(upperVBox, lowerVBox)
+        topVBox.prefWidthProperty().bind(stage.widthProperty())
+        topVBox.prefHeightProperty().bind(stage.heightProperty())
 
         mainScene = Scene(topVBox).apply {
             addEventHandler(KeyEvent.KEY_PRESSED) {
@@ -117,6 +111,17 @@ class SelectionMenuWindow(var stage: Stage) {
                     if (index < children.size) {
                         pickEntry(children[index].userData as String)
                     }
+                } else if (it.isControlDown && it.code == KeyCode.X) {
+                    findFocusedEntryUserData()?.let { deleteEntry(it) }
+                } else if (it.isControlDown && it.code == KeyCode.E) {
+                    hide()
+                    findFocusedEntryUserData()?.let { userData ->
+                        Cache.getEntry(userData)?.let { EditWindow(stage, it).show() }
+                    }
+                } else if (it.isControlDown && it.code == KeyCode.Q) {
+                    searchTextField.requestFocus()
+                } else if (it.isControlDown && it.code == KeyCode.R) {
+                    updateDisplay(searchTextField.text)
                 }
             }
             loadStylesheet("css/TextFlow.css")?.let(stylesheets::add)
@@ -127,9 +132,9 @@ class SelectionMenuWindow(var stage: Stage) {
         stage.apply {
             title = "Clipboard Selection Menu"
             width = 500.0
-            height = 800.0
+            height = 700.0
             minWidth = 100.0
-            minHeight = 100.0
+            minHeight = 200.0
             scene = mainScene
             initStyle(StageStyle.UTILITY)
             focusedProperty().addListener { _, _, newValue ->
@@ -178,18 +183,59 @@ class SelectionMenuWindow(var stage: Stage) {
     private fun createEntry(entry: Entry, searchString: String, order: Int): StackPane {
         return StackPane().apply {
             val textFlow = createEntryTextFlow(entry, searchString, order)
+            userData = entry.md5Digest
             children.add(textFlow)
             children.add(HBox().apply {
                 // show variants icon
-                children.add(Button("TS").apply { prefWidth = 20.0;prefHeight = 20.0;isFocusTraversable = false })
-                children.add(Button("TXT").apply { prefWidth = 20.0;prefHeight = 20.0;isFocusTraversable = false })
-                children.add(Button("JSON").apply { prefWidth = 20.0; prefHeight = 20.0;isFocusTraversable = false })
-                // show delete icon
-                children.add(Button("Delete").apply { prefWidth = 20.0; prefHeight = 20.0;isFocusTraversable = false })
+                // todo
+                // use plugin to add extra functionalities
+                if (entry.type != EntryType.IMAGE) {
+                    children.add(Button().apply {
+                        graphic = FontIcon("antf-edit:16")
+                        tooltip = Tooltip("edit")
+                        userData = entry.md5Digest
+                        onAction = EventHandler { ev ->
+                            val entryUserData = ev.source.let { it as Button }.userData as String
+                            Cache.getEntry(entryUserData)?.let {
+                                hide()
+                                EditWindow(stage, it).show()
+                            }
+                        }
+                        isFocusTraversable = false
+                    })
+                }
+                children.add(Button().apply {
+                    graphic = FontIcon("antf-delete:16:red")
+                    tooltip = Tooltip("delete")
+                    userData = entry.md5Digest
+                    onAction = EventHandler { ev ->
+                        deleteEntry(ev.source.let { it as Button }.userData as String)
+                    }
+                    isFocusTraversable = false
+                })
                 alignment = Pos.BOTTOM_RIGHT
                 isPickOnBounds = false
-//                visibleProperty().bind(textFlow.focusedProperty())
+                isVisible = false
             })
+        }
+    }
+
+    private fun findFocusedEntryUserData(): String? {
+        for (child in selectionVBox.children) {
+            val sp = child as StackPane
+            val tf = sp.children.first { it is TextFlow }
+            if (tf.isFocused)
+                return sp.userData as String
+        }
+        return null;
+    }
+
+    private fun deleteEntry(md5Digest: String) {
+        with(selectionVBox) {
+            children.first { it.userData == md5Digest }?.let {
+                children.remove(it)
+                Cache.deleteEntry(md5Digest)
+            }
         }
     }
 
@@ -284,10 +330,6 @@ class SelectionMenuWindow(var stage: Stage) {
                     )
                 }
             }
-
-            val s = 5.0
-            padding = Insets(s, s, s, s)
-            prefWidthProperty().bind(stage.widthProperty())
             onMouseClicked = EventHandler { ev ->
                 pickEntry(ev.source.let { it as TextFlow }.userData as String)
             }
@@ -297,8 +339,27 @@ class SelectionMenuWindow(var stage: Stage) {
                     pickEntry(ev.source.let { it as TextFlow }.userData as String)
                 }
             }
+            focusedProperty().addListener { _, _, newValue ->
+                if (newValue) {
+                    showEntryButton(entry.md5Digest)
+                }
+            }
+            val s = 5.0
+            padding = Insets(s, s, s, s)
+            prefWidthProperty().bind(stage.widthProperty())
             userData = md5Digest
             isFocusTraversable = true
+        }
+    }
+
+    private fun showEntryButton(md5Digest: String) {
+        for (child in selectionVBox.children) {
+            val sp = child as StackPane
+            val userData = sp.userData as String
+            sp.children.first { it is HBox }.let {
+                val node = it as HBox
+                node.isVisible = md5Digest == userData
+            }
         }
     }
 
@@ -306,7 +367,6 @@ class SelectionMenuWindow(var stage: Stage) {
         ClipboardApi.setClipboard(md5Digest)
         hide()
         searchTextField.text = ""
-        updateDisplay()
     }
 
     fun show() {
@@ -325,6 +385,7 @@ class SelectionMenuWindow(var stage: Stage) {
             stage.isIconified = false
             searchTextField.requestFocus()
             selectionScrollPane.vvalue = 0.0
+            updateDisplay(searchTextField.text)
         }
     }
 

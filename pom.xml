@@ -54,11 +54,11 @@
             <version>3.2.3</version>
         </dependency>
 
-        <!--        <dependency>-->
-        <!--            <groupId>com.dorkbox</groupId>-->
-        <!--            <artifactId>SystemTray</artifactId>-->
-        <!--            <version>3.17</version>-->
-        <!--        </dependency>-->
+        <dependency>
+            <groupId>com.dorkbox</groupId>
+            <artifactId>SystemTray</artifactId>
+            <version>3.17</version>
+        </dependency>
 
         <dependency>
             <groupId>com.github.tulskiy</groupId>
@@ -89,6 +89,25 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.75</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-antdesignicons-pack</artifactId>
+            <version>12.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.kordamp.ikonli</groupId>
+            <artifactId>ikonli-javafx</artifactId>
+            <version>12.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fxmisc.richtext</groupId>
+            <artifactId>richtextfx</artifactId>
+            <version>0.10.5</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -142,6 +161,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.6</version>
+
                 <executions>
                     <execution>
                         <id>make-assembly</id>
@@ -154,10 +174,14 @@
                                 <manifest>
                                     <mainClass>${main.class}</mainClass>
                                 </manifest>
+                                <manifestEntries>
+                                    <Multi-Release>true</Multi-Release>
+                                </manifestEntries>
                             </archive>
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+
                         </configuration>
                     </execution>
                 </executions>
