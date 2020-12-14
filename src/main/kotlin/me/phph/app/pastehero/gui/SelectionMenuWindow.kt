@@ -83,7 +83,6 @@ class SelectionMenuWindow(var stage: Stage) {
         selectionScrollPane.apply {
             content = selectionVBox
             isFitToWidth = true
-            isFitToHeight = true
         }
         VBox.setVgrow(selectionVBox, Priority.ALWAYS)
         VBox.setVgrow(selectionScrollPane, Priority.ALWAYS)
