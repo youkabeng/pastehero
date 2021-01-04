@@ -1,10 +1,12 @@
-package me.phph.app.pastehero.gui
+package me.phph.app.pastehero
 
 import com.tulskiy.keymaster.common.Provider
 import javafx.application.Application
+import javafx.application.Platform
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.Storage
+import me.phph.app.pastehero.view.ViewHelper
 import java.awt.*
 import javax.swing.KeyStroke
 import kotlin.system.exitProcess
@@ -13,27 +15,30 @@ class App : Application() {
 
     private val triggered = SimpleIntegerProperty(0)
 
-    private var appStage: Stage? = null
-    private var selectionMenuWindow: SelectionMenuWindow? = null
+    private var viewFactory: ViewHelper? = null
 
     override fun start(primaryStage: Stage?) {
-        primaryStage?.let {
-            appStage = primaryStage
-            selectionMenuWindow = SelectionMenuWindow(primaryStage)
-            initSystemTray()
-            initBindings()
-            registerGlobalKeys()
-        }
+        viewFactory = ViewHelper()
+        viewFactory!!.initMainWindow()
+        initSystemTray()
+        initBindings()
+        registerGlobalKeys()
     }
 
     private fun registerGlobalKeys() {
         val provider = Provider.getCurrentProvider(false)
-        provider.register(KeyStroke.getKeyStroke("control shift V"), { selectionMenuWindow?.show() })
+        provider.register(KeyStroke.getKeyStroke("control shift V")) {
+            Platform.runLater {
+                viewFactory!!.showMainWindow()
+            }
+        }
     }
 
     private fun initBindings() {
         triggered.addListener { _, _, _ ->
-            selectionMenuWindow?.show()
+            Platform.runLater {
+                viewFactory!!.showMainWindow()
+            }
         }
     }
 

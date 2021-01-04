@@ -69,7 +69,7 @@ object Storage {
         return 0
     }
 
-    fun saveEntry(entry: Entry) {
+    fun saveEntry(entry: Item) {
         var statement1: PreparedStatement? = null
         var statement2: Statement? = null
         var resultSet: ResultSet? = null
@@ -104,16 +104,16 @@ object Storage {
         }
     }
 
-    fun updateEntry(entry: Entry) {
+    fun updateEntry(entry: Item) {
         var statement: PreparedStatement? = null
         try {
             val sql = "update $TABLE_ENTRIES set type=?, data=?, binary=?, md5_digest=?, update_ts=? where id=?"
             statement = getConnection().prepareStatement(sql)
             statement.setString(1, entry.type.toString())
-            if (entry.type == EntryType.STRING) {
+            if (entry.type == ItemType.STRING) {
                 statement.setString(2, entry.value)
                 statement.setString(3, null)
-            } else if (entry.type == EntryType.IMAGE) {
+            } else if (entry.type == ItemType.IMAGE) {
                 statement.setString(2, null)
                 statement.setBytes(3, readImage(entry.image!!))
             }
@@ -132,7 +132,7 @@ object Storage {
         }
     }
 
-    fun listEntryById(id: Int): Entry {
+    fun listEntryById(id: Int): Item {
         val sql = "select * from $TABLE_ENTRIES where id=$id"
         var statement: Statement? = null
         var resultSet: ResultSet? = null
@@ -140,9 +140,9 @@ object Storage {
             statement = getConnection().createStatement()
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
-                return Entry(
+                return Item(
                     resultSet.getInt(1),
-                    EntryType.valueOf(resultSet.getString(2)),
+                    ItemType.valueOf(resultSet.getString(2)),
                     resultSet.getString(3) ?: "",
                     resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
                     resultSet.getString(5),
@@ -155,13 +155,13 @@ object Storage {
             statement?.close()
             resultSet?.close()
         }
-        return Entry(-1, md5Digest = "")
+        return Item(-1, md5Digest = "")
     }
 
-    fun listRecentEntries(count: Int): List<Entry> {
+    fun listRecentEntries(count: Int): List<Item> {
         val sql = ("select id,type,data,binary,md5_digest,update_ts from $TABLE_ENTRIES"
                 + " order by update_ts desc limit $count")
-        val retList = mutableListOf<Entry>()
+        val retList = mutableListOf<Item>()
         var statement: Statement? = null
         var resultSet: ResultSet? = null
         try {
@@ -169,9 +169,9 @@ object Storage {
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
                 retList.add(
-                    Entry(
+                    Item(
                         id = resultSet.getInt(1),
-                        type = EntryType.valueOf(resultSet.getString(2)),
+                        type = ItemType.valueOf(resultSet.getString(2)),
                         value = resultSet.getString(3) ?: "",
                         image = resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
                         md5Digest = resultSet.getString(5),
@@ -188,13 +188,13 @@ object Storage {
         return retList.toList()
     }
 
-    fun listEntries(countPerPage: Int, pageNumber: Int): List<Entry> {
+    fun listEntries(countPerPage: Int, pageNumber: Int): List<Item> {
         val start = countPerPage * (pageNumber - 1)
         val end = start + countPerPage
 
         val sql = ("select * from $TABLE_ENTRIES"
                 + " order by update_ts desc limit $start,$end")
-        val retList = mutableListOf<Entry>()
+        val retList = mutableListOf<Item>()
         var statement: Statement? = null
         var resultSet: ResultSet? = null
         try {
@@ -202,9 +202,9 @@ object Storage {
             resultSet = statement.executeQuery(sql)
             while (resultSet.next()) {
                 retList.add(
-                    Entry(
+                    Item(
                         resultSet.getInt(1),
-                        EntryType.valueOf(resultSet.getString(2)),
+                        ItemType.valueOf(resultSet.getString(2)),
                         resultSet.getString(3) ?: "",
                         resultSet.getBytes(4)?.let { ImageIO.read(ByteArrayInputStream(it)) },
                         resultSet.getString(5),

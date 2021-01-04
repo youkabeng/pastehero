@@ -22,10 +22,10 @@ class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity +
  * A wrapper class for LRCCache
  */
 object Cache {
-    private val maxEntryCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ENTRY_COUNT)
-    private val defaultEntryFilePath = Configuration.getDefaultEntryFilePath()
-    private val cache = LRUCache<String, Entry>(maxEntryCount)
-    val defaultEntries = mutableMapOf<String, Entry>()
+    private val maxItemsCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ENTRY_COUNT)
+    private val defaultItemsFilePath = Configuration.getDefaultEntryFilePath()
+    private val cache = LRUCache<String, Item>(maxItemsCount)
+    val defaultItems = mutableMapOf<String, Item>()
 
     init {
         loadData()
@@ -36,65 +36,65 @@ object Cache {
      * The id of a default entry is hard coded to -2 for now
      */
     private fun loadData() {
-        val entryList = Storage.listRecentEntries(maxEntryCount).reversed()
-        File(defaultEntryFilePath).useLines { lines ->
+        val items = Storage.listRecentEntries(maxItemsCount).reversed()
+        File(defaultItemsFilePath).useLines { lines ->
             lines.map(String::trim).forEach { line ->
                 if (!line.startsWith(Configuration.SPECIAL_COMMENT) && line.isNotEmpty()) {
                     val md5 = md5(line.trim())
-                    val entry = Entry(-2, EntryType.STRING, line.trim(), null, md5)
-                    defaultEntries[md5] = entry
+                    val entry = Item(-2, ItemType.STRING, line.trim(), null, md5)
+                    defaultItems[md5] = entry
                 }
             }
         }
-        for (entry in entryList) {
-            if (!defaultEntries.containsKey(entry.md5Digest)) {
-                cache.set(entry.md5Digest, entry)
+        for (item in items) {
+            if (!defaultItems.containsKey(item.md5Digest)) {
+                cache.set(item.md5Digest, item)
             }
         }
     }
 
-    fun listEntries(start: Int, end: Int): List<Entry> {
-        val retList = mutableListOf<Entry>()
+    fun listItems(start: Int, end: Int): List<Item> {
+        val retList = mutableListOf<Item>()
         var i = 0
-        val listIterator = ArrayList<Entry>(cache.values).listIterator(count())
+        val listIterator = ArrayList<Item>(cache.values).listIterator(count())
         while (listIterator.hasPrevious()) {
-            val entry = listIterator.previous()
-            if (entry.type == EntryType.STRING) {
-                if (entry.value.isEmpty()) {
+            val item = listIterator.previous()
+            if (item.type == ItemType.STRING) {
+                if (item.value.isEmpty()) {
                     continue
                 }
                 if (i in start until end) {
-                    defaultEntries[entry.md5Digest]?.also { retList.add(it) } ?: run { retList.add(entry) }
+                    defaultItems[item.md5Digest]?.also { retList.add(it) } ?: run { retList.add(item) }
                 }
             } else {
-                retList.add(entry)
+                retList.add(item)
             }
             i++
         }
         return retList
     }
 
-    fun containsEntry(md5Digest: String): Boolean {
-        return cache.containsKey(md5Digest) || defaultEntries.containsKey(md5Digest)
+    fun contains(md5Digest: String): Boolean {
+        return cache.containsKey(md5Digest) || defaultItems.containsKey(md5Digest)
     }
 
-    fun setEntry(entry: Entry) {
-        cache.set(entry.md5Digest, entry)
-        when (entry.id) {
-            -1 -> Storage.saveEntry(entry)
+    fun set(item: Item) {
+        cache.set(item.md5Digest, item)
+        when (item.id) {
+            -1 -> Storage.saveEntry(item)
             -2 -> Unit
-            else -> Storage.updateEntry(entry)
+            else -> Storage.updateEntry(item)
         }
     }
 
-    fun getEntry(md5Digest: String): Entry? {
-        return cache[md5Digest] ?: defaultEntries[md5Digest]
+    fun get(md5Digest: String): Item? {
+        return cache[md5Digest] ?: defaultItems[md5Digest]
     }
 
-    fun deleteEntry(md5Digest: String) {
-        cache[md5Digest]?.let { entry ->
+    fun delete(md5Digest: String) {
+        cache[md5Digest]?.let { item ->
             cache.remove(md5Digest)
-            Storage.deleteEntry(entry.id)
+            Storage.deleteEntry(item.id)
         }
     }
 

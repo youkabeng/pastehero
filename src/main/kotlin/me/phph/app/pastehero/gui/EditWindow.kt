@@ -7,11 +7,11 @@ import javafx.scene.input.KeyEvent
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.Cache
 import me.phph.app.pastehero.api.ClipboardApi
-import me.phph.app.pastehero.api.Entry
+import me.phph.app.pastehero.api.Item
 import me.phph.app.pastehero.api.md5
 import org.fxmisc.richtext.StyleClassedTextArea
 
-class EditWindow(var rootStage: Stage, entry: Entry) {
+class EditWindow(var rootStage: Stage, entry: Item) {
     private var mainStage: Stage?
     private var mainScene: Scene?
     private var editArea = StyleClassedTextArea()
@@ -25,10 +25,10 @@ class EditWindow(var rootStage: Stage, entry: Entry) {
                 } else if (it.isControlDown && it.code == KeyCode.S) {
                     entry.updateTs = System.currentTimeMillis()
                     entry.value = editArea.text.trim()
-                    Cache.deleteEntry(entry.md5Digest)
+                    Cache.delete(entry.md5Digest)
                     val md5Digest = md5(entry.value)
                     entry.md5Digest = md5Digest
-                    Cache.setEntry(entry)
+                    Cache.set(entry)
                     ClipboardApi.setClipboard(md5Digest)
                     close()
                 } else if (it.isControlDown && it.code == KeyCode.Z) {

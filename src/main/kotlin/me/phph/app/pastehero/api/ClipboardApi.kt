@@ -13,7 +13,7 @@ import java.io.File
  * All the supported data types
  * HTML, XML, JSON, URL, RTF are all of type STRING with additional formats
  */
-enum class EntryType {
+enum class ItemType {
     STRING,
     HTML,
     XML,
@@ -24,14 +24,14 @@ enum class EntryType {
     IMAGE
 }
 
-data class Entry(
+data class Item(
     var id: Int = -1,
-    var type: EntryType = EntryType.STRING,
+    var type: ItemType = ItemType.STRING,
     var value: String = "",
     var image: BufferedImage? = null,
     var md5Digest: String,
     var updateTs: Long = 0,
-    val variants: MutableList<Entry> = mutableListOf()
+    val variants: MutableList<Item> = mutableListOf()
 )
 
 object ClipboardApi {
@@ -51,11 +51,11 @@ object ClipboardApi {
         }
     }
 
-    fun listEntries(searchString: String): List<Entry> {
+    fun listItems(searchString: String): List<Item> {
         val start = 0
         val end = Cache.count()
         val searchIgnoreCase = Configuration.getConfigurationBool(Configuration.CONF_SEARCH_IGNORECASE)
-        return ((if (searchString.isEmpty()) arrayListOf() else Cache.defaultEntries.map { it.value }) + Cache.listEntries(
+        return ((if (searchString.isEmpty()) arrayListOf() else Cache.defaultItems.map { it.value }) + Cache.listItems(
             start,
             end
         )).filter {
@@ -75,25 +75,25 @@ object ClipboardApi {
         var (data, type) = when {
             clipboard.hasString() -> {
                 if (clipboard.hasFiles()) {
-                    listOf(clipboard.string, EntryType.FILES)
+                    listOf(clipboard.string, ItemType.FILES)
                 } else {
                     val str = clipboard.string
                     when {
-                        isJson(str) -> listOf(str, EntryType.JSON)
-                        isXml(str) -> listOf(str, EntryType.XML)
-                        else -> listOf(str, EntryType.STRING)
+                        isJson(str) -> listOf(str, ItemType.JSON)
+                        isXml(str) -> listOf(str, ItemType.XML)
+                        else -> listOf(str, ItemType.STRING)
                     }
                 }
             }
-            clipboard.hasImage() -> listOf(clipboard.image, EntryType.IMAGE)
+            clipboard.hasImage() -> listOf(clipboard.image, ItemType.IMAGE)
             else -> return
         }
 
-        if (type == EntryType.IMAGE) {
+        if (type == ItemType.IMAGE) {
             val bufferedImage = SwingFXUtils.fromFXImage(data as Image, null)
             val md5Digest = md5(bufferedImage)
-            if (!Cache.containsEntry(md5Digest)) {
-                Cache.setEntry(Entry(type = EntryType.IMAGE, image = bufferedImage, md5Digest = md5Digest))
+            if (!Cache.contains(md5Digest)) {
+                Cache.set(Item(type = ItemType.IMAGE, image = bufferedImage, md5Digest = md5Digest))
             }
         } else {
             data = modData(data as String)
@@ -102,55 +102,55 @@ object ClipboardApi {
             }
             val md5Digest = md5(data)
             when {
-                Cache.defaultEntries.containsKey(md5Digest) -> {
-                    Cache.defaultEntries[md5Digest]?.let { e ->
+                Cache.defaultItems.containsKey(md5Digest) -> {
+                    Cache.defaultItems[md5Digest]?.let { e ->
                         if (type != e.type) {
-                            e.type = type as EntryType
+                            e.type = type as ItemType
                         }
-                        Cache.setEntry(e)
+                        Cache.set(e)
                     }
                 }
-                Cache.containsEntry(md5Digest) -> {
-                    Cache.getEntry(md5Digest)?.let(Cache::setEntry)
+                Cache.contains(md5Digest) -> {
+                    Cache.get(md5Digest)?.let(Cache::set)
                 }
                 else -> {
-                    Cache.setEntry(Entry(type = type as EntryType, value = data, md5Digest = md5Digest))
+                    Cache.set(Item(type = type as ItemType, value = data, md5Digest = md5Digest))
                 }
             }
         }
     }
 
     fun setClipboard(md5Digest: String) {
-        Cache.getEntry(md5Digest)?.let { entry ->
-            entry.updateTs = System.currentTimeMillis()
-            when (entry.type) {
-                EntryType.STRING,
-                EntryType.URL,
-                EntryType.JSON,
-                EntryType.XML,
-                EntryType.HTML,
-                EntryType.RTF -> {
-                    clipboard.setContent(ClipboardContent().apply { putString(entry.value) })
+        Cache.get(md5Digest)?.let { item ->
+            item.updateTs = System.currentTimeMillis()
+            when (item.type) {
+                ItemType.STRING,
+                ItemType.URL,
+                ItemType.JSON,
+                ItemType.XML,
+                ItemType.HTML,
+                ItemType.RTF -> {
+                    clipboard.setContent(ClipboardContent().apply { putString(item.value) })
                 }
-                EntryType.IMAGE -> {
+                ItemType.IMAGE -> {
                     clipboard.setContent(ClipboardContent().apply {
                         putImage(
                             SwingFXUtils.toFXImage(
-                                entry.image!!,
+                                item.image!!,
                                 null
                             )
                         )
                     })
                 }
-                EntryType.FILES -> {
-                    entry.value.split("\n").map { File(it.replace("file://", "")) }.let { fileList ->
+                ItemType.FILES -> {
+                    item.value.split("\n").map { File(it.replace("file://", "")) }.let { fileList ->
                         clipboard.setContent(ClipboardContent().apply {
                             putFiles(fileList)
                         })
                     }
                 }
             }
-            Cache.setEntry(entry)
+            Cache.set(item)
         }
     }
 
