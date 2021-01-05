@@ -8,7 +8,7 @@
 <AnchorPane prefHeight="640.0" prefWidth="518.0" xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <TextField fx:id="searchTextField" layoutX="7.0" layoutY="8.0" prefHeight="26.0" prefWidth="297.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
-      <ScrollPane fitToHeight="true" fitToWidth="true" layoutX="7.0" layoutY="26.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0">
+      <ScrollPane fx:id="itemsScrollPane" fitToHeight="true" fitToWidth="true" layoutX="7.0" layoutY="26.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="31.0">
          <content>
             <VBox fx:id="itemsVbox" />
          </content>

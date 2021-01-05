@@ -1,4 +1,4 @@
-package me.phph.app.pastehero.gui
+package me.phph.app.pastehero.controller
 
 import javafx.application.Platform
 import javafx.scene.Scene

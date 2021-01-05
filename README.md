@@ -38,7 +38,20 @@ If you want to add some default entries, just edit the following file:
 ~/.pastehero/defaut_entries
 ```
 
-The first 10 entries are mapped with Ctrl+N shortcuts for you to make selection quickly.
+#### shortcuts
+
+The first 10 entries are mapped with Alt+N shortcuts for you to make quick selection.
+
+Main window shortcuts:
+Ctrl + E        Shows a window where you can edit the item
+Ctrl + X        Delete the focused item
+Ctrl + R        Rearrange the displayed items, remap the number if necessary
+Ctrl + Q        Focus on the search bar and type to search
+Esc             Hide main window
+
+Edit window shortcuts:
+Ctrl + S        Save and hide edit window
+Esc             Hide edit window and leave the item untouched
 
 #### Packaging
 

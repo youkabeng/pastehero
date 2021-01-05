@@ -6,7 +6,7 @@ import javafx.application.Platform
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.stage.Stage
 import me.phph.app.pastehero.api.Storage
-import me.phph.app.pastehero.view.ViewHelper
+import me.phph.app.pastehero.view.ViewFactory
 import java.awt.*
 import javax.swing.KeyStroke
 import kotlin.system.exitProcess
@@ -15,11 +15,8 @@ class App : Application() {
 
     private val triggered = SimpleIntegerProperty(0)
 
-    private var viewFactory: ViewHelper? = null
-
     override fun start(primaryStage: Stage?) {
-        viewFactory = ViewHelper()
-        viewFactory!!.initMainWindow()
+        ViewFactory.initMainWindow()
         initSystemTray()
         initBindings()
         registerGlobalKeys()
@@ -29,7 +26,7 @@ class App : Application() {
         val provider = Provider.getCurrentProvider(false)
         provider.register(KeyStroke.getKeyStroke("control shift V")) {
             Platform.runLater {
-                viewFactory!!.showMainWindow()
+                ViewFactory.showMainWindow()
             }
         }
     }
@@ -37,7 +34,7 @@ class App : Application() {
     private fun initBindings() {
         triggered.addListener { _, _, _ ->
             Platform.runLater {
-                viewFactory!!.showMainWindow()
+                ViewFactory.showMainWindow()
             }
         }
     }

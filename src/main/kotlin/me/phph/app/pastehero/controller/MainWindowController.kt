@@ -8,9 +8,9 @@ import javafx.fxml.FXML
 import javafx.fxml.Initializable
 import javafx.geometry.Insets
 import javafx.geometry.Pos
-import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.Button
+import javafx.scene.control.ScrollPane
 import javafx.scene.control.TextField
 import javafx.scene.control.Tooltip
 import javafx.scene.image.ImageView
@@ -23,20 +23,23 @@ import javafx.scene.paint.Color
 import javafx.scene.text.Text
 import javafx.scene.text.TextFlow
 import javafx.stage.Stage
+import javafx.stage.StageStyle
 import javafx.util.Duration
 import me.phph.app.pastehero.api.*
-import me.phph.app.pastehero.view.ViewHelper
 import org.kordamp.ikonli.javafx.FontIcon
 import java.awt.MouseInfo
 import java.net.URL
 import java.util.*
 
 
-class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
-    BaseController(viewHelper, fxmlPath), Initializable {
+class MainWindowController(fxmlPath: String) :
+    BaseController(fxmlPath), Initializable {
 
     @FXML
     private var searchTextField: TextField? = null
+
+    @FXML
+    private var itemsScrollPane: ScrollPane? = null
 
     @FXML
     private var itemsVbox: VBox? = null
@@ -51,34 +54,58 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
         setupTrigger()
     }
 
-    override fun createScene(parent: Parent?): Scene {
-        return super.createScene(parent).apply {
+    override fun show() {
+        stage?.let { stage ->
+            val location = MouseInfo.getPointerInfo().location
+            stage.x = location.x * 1.0
+            stage.y = location.y * 1.0
+            stage.requestFocus()
+            stage.show()
+            if (stage.isMaximized) {
+                stage.isMaximized = false
+            }
+            stage.isIconified = true
+            stage.isIconified = false
+            searchTextFieldRequestFocus()
+            itemsScrollPaneResetVvalue()
+            updateItemsVbox()
+        }
+    }
+
+    override fun setupStage(stage: Stage) {
+        stage.apply {
+            initStyle(StageStyle.UTILITY)
+            stage.focusedProperty().addListener { _, _, newValue ->
+                if (newValue) show() else hide()
+            }
+            onCloseRequest = EventHandler { hide() }
+            isAlwaysOnTop = true
+        }
+    }
+
+    override fun setupScene(scene: Scene) {
+        scene.apply {
             addEventHandler(KeyEvent.KEY_PRESSED) {
                 if (it.code == KeyCode.ESCAPE) {
-                    close()
-                    searchTextField!!.text = ""
-                    setupItemsVbox()
+                    updateItemsVbox()
+                    hide()
                 } else if (it.isAltDown && it.code.isDigitKey) {
-                    val children = itemsVbox!!.children
                     var index = it.code.code - '0'.toInt() - 1
                     if (index == -1) {
                         index = 9
                     }
-                    if (index < children.size) {
-                        pickItem(children[index].userData as String)
-                    }
+                    pickItemByIndex(index)
                 } else if (it.isControlDown && it.code == KeyCode.X) {
                     findFocusedItemUserData()?.let { deleteItem(it) }
                 } else if (it.isControlDown && it.code == KeyCode.E) {
-                    close()
                     findFocusedItemUserData()?.let { userData ->
-//                        Cache.get(userData)?.let { EditWindow(stage, it).show() }
+                        Cache.get(userData)?.let { EditWindow(stage!!, it).show() }
                         println("edit is not supported for now")
                     }
                 } else if (it.isControlDown && it.code == KeyCode.Q) {
-                    searchTextField!!.requestFocus()
+                    searchTextFieldRequestFocus()
                 } else if (it.isControlDown && it.code == KeyCode.R) {
-                    setupItemsVbox(searchTextField!!.text)
+                    updateItemsVbox()
                 }
             }
         }
@@ -128,6 +155,10 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
         }
     }
 
+    private fun updateItemsVbox() {
+        setupItemsVbox(readSearchText())
+    }
+
     private fun setupTrigger() {
         updated.bind(ClipboardApi.updated)
         updated.addListener { _, _, _ ->
@@ -152,9 +183,8 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
                         onAction = EventHandler { ev ->
                             val itemUserData = ev.source.let { it as Button }.userData as String
                             Cache.get(itemUserData)?.let {
-                                close()
-//                                hide()
-//                                EditWindow(stage, it).show()
+                                hide()
+                                EditWindow(stage!!, it).show()
                             }
                         }
                         isFocusTraversable = false
@@ -206,7 +236,7 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
                         if (searchString.isEmpty()) -1 else text.toLowerCase().indexOf(searchString.toLowerCase())
                     if (index >= 0) {
                         val t = Text(text.substring(0, index))
-                        if (t.layoutBounds.width > getStage().width) {
+                        if (t.layoutBounds.width > stage!!.width) {
                             // too long
                             // need to make summary
                             children.add(Text("..."))
@@ -234,7 +264,7 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
                     }
                     Tooltip.install(
                         this,
-                        Tooltip(if (text.length > lengthLimit) text.substring(0, lengthLimit) else text).apply {
+                        Tooltip(if (text.length > lengthLimit * 3) text.substring(0, lengthLimit) else text).apply {
                             showDelay = Duration.millis(50.0)
                             showDuration = Duration.minutes(1.0)
                         })
@@ -288,36 +318,8 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
         }
     }
 
-//    fun show() {
-//        Platform.runLater {
-//            val location = MouseInfo.getPointerInfo().location
-//            stage.x = location.x * 1.0
-//            stage.y = location.y * 1.0
-//            stage.requestFocus()
-//            stage.show()
-//            if (stage.isMaximized) {
-//                stage.isMaximized = false
-//                stage.width = lastWidth
-//                stage.height = lastHeight
-//            }
-//            stage.isIconified = true
-//            stage.isIconified = false
-//            searchTextField.requestFocus()
-//            selectionScrollPane.vvalue = 0.0
-//            updateDisplay(searchTextField.text)
-//        }
-//    }
-
     private fun readSearchText(): String {
         return searchTextField!!.text
-    }
-
-    private fun close() {
-        getStage().let { viewHelper.closeStage(it) }
-    }
-
-    private fun getStage(): Stage {
-        return searchTextField?.scene?.window.let { it as Stage }
     }
 
     private fun deleteItem(md5Digest: String) {
@@ -331,12 +333,19 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
 
     private fun pickItem(md5Digest: String) {
         ClipboardApi.setClipboard(md5Digest)
-        close()
         searchTextField!!.text = ""
+        hide()
+    }
+
+    private fun pickItemByIndex(index: Int) {
+        val children = itemsVbox!!.children
+        if (index < children.size) {
+            pickItem(children[index].userData as String)
+        }
     }
 
     private fun showItemOptionButtons(md5Digest: String = "") {
-        itemsVbox!!.children?.forEach {
+        itemsVbox!!.children.forEach {
             val stackPane = it as StackPane
             val userData = stackPane.userData as String
             stackPane.children.first { it is HBox }.let {
@@ -353,6 +362,26 @@ class MainWindowController(viewHelper: ViewHelper, fxmlPath: String) :
             if (tf.isFocused)
                 return sp.userData as String
         }
-        return null;
+        return null
+    }
+
+    private fun searchTextFieldRequestFocus() {
+        searchTextField!!.requestFocus()
+    }
+
+    private fun searchTextFieldReset() {
+        searchTextField!!.text = ""
+    }
+
+    private fun itemsScrollPaneResetVvalue() {
+        itemsScrollPane?.vvalue = 0.0
+    }
+
+    override fun setupStyles() {
+        scene?.apply {
+            stylesheets.clear()
+            loadStylesheet("css/TextFlow.css")?.let(stylesheets::add)
+            loadStylesheet("css/VBox.css")?.let(stylesheets::add)
+        }
     }
 }
