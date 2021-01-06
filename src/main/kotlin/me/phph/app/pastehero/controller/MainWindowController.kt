@@ -99,8 +99,7 @@ class MainWindowController(fxmlPath: String) :
                     findFocusedItemUserData()?.let { deleteItem(it) }
                 } else if (it.isControlDown && it.code == KeyCode.E) {
                     findFocusedItemUserData()?.let { userData ->
-                        Cache.get(userData)?.let { EditWindow(stage!!, it).show() }
-                        println("edit is not supported for now")
+                        Cache.get(userData)?.let { EditWindow(it).show() }
                     }
                 } else if (it.isControlDown && it.code == KeyCode.Q) {
                     searchTextFieldRequestFocus()
@@ -184,7 +183,7 @@ class MainWindowController(fxmlPath: String) :
                             val itemUserData = ev.source.let { it as Button }.userData as String
                             Cache.get(itemUserData)?.let {
                                 hide()
-                                EditWindow(stage!!, it).show()
+                                EditWindow(it).show()
                             }
                         }
                         isFocusTraversable = false
@@ -298,9 +297,15 @@ class MainWindowController(fxmlPath: String) :
                 }
             }
             onMouseClicked = EventHandler { ev ->
-                pickItem(ev.source.let { it as TextFlow }.userData as String)
+                ev.source.let { it as TextFlow }.let {
+                    if(ev.clickCount == 1) {
+                        it.requestFocus()
+                    } else {
+                        pickItem(it.userData as String)
+                    }
+                }
             }
-            onMouseEntered = EventHandler { requestFocus() }
+//            onMouseEntered = EventHandler { requestFocus() }
             onKeyPressed = EventHandler { ev ->
                 if (ev.code == KeyCode.ENTER) {
                     pickItem(ev.source.let { it as TextFlow }.userData as String)

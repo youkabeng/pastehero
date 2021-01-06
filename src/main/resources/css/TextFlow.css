@@ -4,11 +4,11 @@ TextFlow {
     -fx-font-size: 12px;
 }
 
-TextFlow:hover {
-    -fx-background-color: #bbbfca;
-    -fx-border-color: #bbbfca;
-    -fx-font-size: 12px;
-}
+/*TextFlow:hover {*/
+/*    -fx-background-color: #bbbfca;*/
+/*    -fx-border-color: #bbbfca;*/
+/*    -fx-font-size: 12px;*/
+/*}*/
 
 TextFlow:focused {
     -fx-background-color: #bbbfca;

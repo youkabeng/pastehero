@@ -1,6 +1,5 @@
 package me.phph.app.pastehero.controller
 
-import javafx.application.Platform
 import javafx.scene.Scene
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
@@ -11,7 +10,7 @@ import me.phph.app.pastehero.api.Item
 import me.phph.app.pastehero.api.md5
 import org.fxmisc.richtext.StyleClassedTextArea
 
-class EditWindow(var rootStage: Stage, entry: Item) {
+class EditWindow(entry: Item) {
     private var mainStage: Stage?
     private var mainScene: Scene?
     private var editArea = StyleClassedTextArea()
@@ -38,22 +37,17 @@ class EditWindow(var rootStage: Stage, entry: Item) {
         }
 
         mainStage = Stage().apply {
-            initOwner(rootStage)
             scene = mainScene
-            title = "Edit demo"
+            title = "Edit Item"
         }
     }
 
     fun show() {
-        Platform.runLater {
-            mainStage?.show()
-        }
+        mainStage?.show()
     }
 
-    fun close() {
-        Platform.runLater {
-            mainStage?.close()
-        }
+    private fun close() {
+        mainStage?.close()
     }
 
 }
