@@ -8,21 +8,16 @@ Use it to boost up your productivity!
 
 #### Requirements
 
-Now the app only runs on linux platform (Dbus is enabled). (Support for Windows is coming)
-
 Maven
-Java 1.8+
+Java 11+
 
 #### Restrictions
 
-Only support linux with dbus enabled.
 Only tested in Manjaro KDE.
 
 #### Usage
 
-Create a shortcut to trigger a dbus call system-wide. For example Ctrl+Shift+V
-
-me.phph.app.pastehero /pastehero show
+Default trigger short is Ctrl + Shift + V
 
 Once the shortcut is triggered, the clipboard selection will popup, and you can make your selection easily.
 
