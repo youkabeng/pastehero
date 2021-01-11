@@ -33,7 +33,7 @@ import java.util.*
 
 
 class MainWindowController(fxmlPath: String) :
-    BaseController(fxmlPath), Initializable {
+        BaseController(fxmlPath), Initializable {
 
     @FXML
     private var searchTextField: TextField? = null
@@ -47,6 +47,7 @@ class MainWindowController(fxmlPath: String) :
     private val updated = SimpleIntegerProperty(0)
     private val searchTimer = Timer()
     private val countPerPage: Int = Configuration.getConfigurationInt(Configuration.CONF_COUNT_PER_PAGE)
+    private var lastTrigger = 0L
 
     override fun initialize(url: URL?, resourceBundle: ResourceBundle?) {
         setupSearchTextField()
@@ -76,7 +77,13 @@ class MainWindowController(fxmlPath: String) :
         stage.apply {
             initStyle(StageStyle.UTILITY)
             stage.focusedProperty().addListener { _, _, newValue ->
-                if (newValue) show() else hide()
+                if (newValue) {
+                    lastTrigger = System.currentTimeMillis()
+                    show()
+                } else {
+                    if (System.currentTimeMillis() - lastTrigger > 500)
+                        hide()
+                }
             }
             onCloseRequest = EventHandler { hide() }
             isAlwaysOnTop = true
@@ -217,10 +224,10 @@ class MainWindowController(fxmlPath: String) :
                     v = 0
                 }
                 children.addAll(
-                    Text("["),
-                    Text("$v").apply { fill = Color.RED; style = "-fx-underline: true" },
-                    Text("]"),
-                    Text("[$type] ")
+                        Text("["),
+                        Text("$v").apply { fill = Color.RED; style = "-fx-underline: true" },
+                        Text("]"),
+                        Text("[$type] ")
                 )
             }
             when (type) {
@@ -232,7 +239,7 @@ class MainWindowController(fxmlPath: String) :
                 ItemType.HTML,
                 ItemType.XML -> {
                     val index =
-                        if (searchString.isEmpty()) -1 else text.toLowerCase().indexOf(searchString.toLowerCase())
+                            if (searchString.isEmpty()) -1 else text.toLowerCase().indexOf(searchString.toLowerCase())
                     if (index >= 0) {
                         val t = Text(text.substring(0, index))
                         if (t.layoutBounds.width > stage!!.width) {
@@ -262,11 +269,11 @@ class MainWindowController(fxmlPath: String) :
                         }
                     }
                     Tooltip.install(
-                        this,
-                        Tooltip(if (text.length > lengthLimit * 3) text.substring(0, lengthLimit) else text).apply {
-                            showDelay = Duration.millis(50.0)
-                            showDuration = Duration.minutes(1.0)
-                        })
+                            this,
+                            Tooltip(if (text.length > lengthLimit * 3) text.substring(0, lengthLimit) else text).apply {
+                                showDelay = Duration.millis(50.0)
+                                showDuration = Duration.minutes(1.0)
+                            })
                     maxHeight = 200.0
                 }
                 ItemType.IMAGE -> {
@@ -278,34 +285,33 @@ class MainWindowController(fxmlPath: String) :
                     })
                     maxHeight = 150.0
                     Tooltip.install(
-                        this,
-                        Tooltip().apply {
-                            graphic = ImageView(SwingFXUtils.toFXImage(item.image!!, null)).apply {
-                                val imgWidth = item.image!!.width
-                                val imgHeight = item.image!!.height
-                                if (imgWidth > imgHeight) {
-                                    fitWidth = 900.0
-                                } else {
-                                    fitHeight = 900.0
+                            this,
+                            Tooltip().apply {
+                                graphic = ImageView(SwingFXUtils.toFXImage(item.image!!, null)).apply {
+                                    val imgWidth = item.image!!.width
+                                    val imgHeight = item.image!!.height
+                                    if (imgWidth > imgHeight) {
+                                        fitWidth = 900.0
+                                    } else {
+                                        fitHeight = 900.0
+                                    }
+                                    isPreserveRatio = true
                                 }
-                                isPreserveRatio = true
+                                showDelay = Duration.millis(300.0)
+                                showDuration = Duration.minutes(1.0)
                             }
-                            showDelay = Duration.millis(300.0)
-                            showDuration = Duration.minutes(1.0)
-                        }
                     )
                 }
             }
             onMouseClicked = EventHandler { ev ->
                 ev.source.let { it as TextFlow }.let {
-                    if(ev.clickCount == 1) {
+                    if (ev.clickCount == 1) {
                         it.requestFocus()
                     } else {
                         pickItem(it.userData as String)
                     }
                 }
             }
-//            onMouseEntered = EventHandler { requestFocus() }
             onKeyPressed = EventHandler { ev ->
                 if (ev.code == KeyCode.ENTER) {
                     pickItem(ev.source.let { it as TextFlow }.userData as String)
