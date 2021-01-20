@@ -5,7 +5,7 @@ import java.sql.*
 import javax.imageio.ImageIO
 
 object Storage {
-    private const val TABLE_ENTRIES = "entries"
+    private const val TABLE_ITEMS = "items"
 
     private var connection: Connection? = null
 
@@ -25,7 +25,7 @@ object Storage {
     }
 
     private fun initTable() {
-        val entryTableSql = ("create table if not exists $TABLE_ENTRIES("
+        val sql = ("create table if not exists $TABLE_ITEMS("
                 + "id integer primary key autoincrement,"
                 + "type integer,"
                 + "data text,"
@@ -36,7 +36,7 @@ object Storage {
         var statement: Statement? = null
         try {
             statement = getConnection().createStatement()
-            statement.executeUpdate(entryTableSql)
+            statement.executeUpdate(sql)
             getConnection().commit()
         } catch (e: Exception) {
             getConnection().rollback()
@@ -56,7 +56,7 @@ object Storage {
         var resultSet: ResultSet? = null
         try {
             statement = getConnection().createStatement()
-            resultSet = statement.executeQuery("select count(id) as c from entries")
+            resultSet = statement.executeQuery("select count(id) as c from $TABLE_ITEMS")
             while (resultSet.next()) {
                 return resultSet.getInt("c")
             }
@@ -69,31 +69,32 @@ object Storage {
         return 0
     }
 
-    fun saveEntry(entry: Item) {
+    fun saveItem(item: Item) {
         var statement1: PreparedStatement? = null
         var statement2: Statement? = null
         var resultSet: ResultSet? = null
         try {
-            val sql = "insert into $TABLE_ENTRIES values(NULL,?,?,?,?,?)"
+            val sql = "insert into $TABLE_ITEMS values(NULL,?,?,?,?,?)"
             val updateTs = System.currentTimeMillis()
             statement1 = getConnection().prepareStatement(sql).apply {
-                setString(1, entry.type.toString())
-                setString(2, if (entry.value.isNotEmpty()) entry.value else null)
-                setBytes(3, entry.image?.let(::readImage))
-                setString(4, entry.md5Digest)
+                setString(1, item.type.toString())
+                setString(2, if (item.value.isNotEmpty()) item.value else null)
+                setBytes(3, item.image?.let(::readImage))
+                setString(4, item.md5Digest)
                 setLong(5, updateTs)
             }
             statement1.executeUpdate()
             getConnection().commit()
 
-            val queryIdSql = "select seq from sqlite_sequence where name='$TABLE_ENTRIES'"
+            val queryIdSql = "select seq from sqlite_sequence where name='$TABLE_ITEMS'"
             statement2 = getConnection().createStatement()
             resultSet = statement2.executeQuery(queryIdSql)
             while (resultSet.next()) {
                 val id = resultSet.getInt(1)
-                entry.id = id
+                item.id = id
+                break
             }
-            entry.updateTs = updateTs
+            item.updateTs = updateTs
         } catch (e: Exception) {
             e.printStackTrace()
             getConnection().rollback()
@@ -104,26 +105,26 @@ object Storage {
         }
     }
 
-    fun updateEntry(entry: Item) {
+    fun updateItem(item: Item) {
         var statement: PreparedStatement? = null
         try {
-            val sql = "update $TABLE_ENTRIES set type=?, data=?, binary=?, md5_digest=?, update_ts=? where id=?"
+            val sql = "update $TABLE_ITEMS set type=?, data=?, binary=?, md5_digest=?, update_ts=? where id=?"
             statement = getConnection().prepareStatement(sql)
-            statement.setString(1, entry.type.toString())
-            if (entry.type == ItemType.STRING) {
-                statement.setString(2, entry.value)
+            statement.setString(1, item.type.toString())
+            if (item.type == ItemType.STRING) {
+                statement.setString(2, item.value)
                 statement.setString(3, null)
-            } else if (entry.type == ItemType.IMAGE) {
+            } else if (item.type == ItemType.IMAGE) {
                 statement.setString(2, null)
-                statement.setBytes(3, readImage(entry.image!!))
+                statement.setBytes(3, readImage(item.image!!))
             }
             val updateTs = System.currentTimeMillis()
-            statement.setString(4, entry.md5Digest)
+            statement.setString(4, item.md5Digest)
             statement.setLong(5, updateTs)
-            statement.setInt(6, entry.id)
+            statement.setInt(6, item.id)
             statement.executeUpdate()
             getConnection().commit()
-            entry.updateTs = updateTs
+            item.updateTs = updateTs
         } catch (e: Exception) {
             e.printStackTrace()
             getConnection().rollback()
@@ -132,8 +133,8 @@ object Storage {
         }
     }
 
-    fun listEntryById(id: Int): Item {
-        val sql = "select * from $TABLE_ENTRIES where id=$id"
+    fun listItemById(id: Int): Item {
+        val sql = "select * from $TABLE_ITEMS where id=$id"
         var statement: Statement? = null
         var resultSet: ResultSet? = null
         try {
@@ -158,8 +159,8 @@ object Storage {
         return Item(-1, md5Digest = "")
     }
 
-    fun listRecentEntries(count: Int): List<Item> {
-        val sql = ("select id,type,data,binary,md5_digest,update_ts from $TABLE_ENTRIES"
+    fun listRecentItems(count: Int): List<Item> {
+        val sql = ("select id,type,data,binary,md5_digest,update_ts from $TABLE_ITEMS"
                 + " order by update_ts desc limit $count")
         val retList = mutableListOf<Item>()
         var statement: Statement? = null
@@ -188,11 +189,11 @@ object Storage {
         return retList.toList()
     }
 
-    fun listEntries(countPerPage: Int, pageNumber: Int): List<Item> {
+    fun listItems(countPerPage: Int, pageNumber: Int): List<Item> {
         val start = countPerPage * (pageNumber - 1)
         val end = start + countPerPage
 
-        val sql = ("select * from $TABLE_ENTRIES"
+        val sql = ("select * from $TABLE_ITEMS"
                 + " order by update_ts desc limit $start,$end")
         val retList = mutableListOf<Item>()
         var statement: Statement? = null
@@ -221,11 +222,11 @@ object Storage {
         return retList.toList()
     }
 
-    fun deleteEntry(id: Int) {
+    fun deleteItem(id: Int) {
         var statement: Statement? = null
         try {
             statement = getConnection().createStatement()
-            statement.executeUpdate("delete from $TABLE_ENTRIES where id=$id")
+            statement.executeUpdate("delete from $TABLE_ITEMS where id=$id")
             getConnection().commit()
         } catch (e: Exception) {
             e.printStackTrace()

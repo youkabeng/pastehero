@@ -67,3 +67,12 @@ fun isXml(data: String): Boolean {
 fun loadStylesheet(path: String): String? {
     return Thread.currentThread().contextClassLoader.getResource(path)?.toExternalForm()
 }
+
+
+fun isWindows(): Boolean {
+    return System.getProperty("os.name").toLowerCase().contains("windows")
+}
+
+fun isLinux(): Boolean {
+    return System.getProperty("os.name").toLowerCase().contains("linux")
+}

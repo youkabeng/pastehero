@@ -22,8 +22,8 @@ class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity +
  * A wrapper class for LRCCache
  */
 object Cache {
-    private val maxItemsCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ENTRY_COUNT)
-    private val defaultItemsFilePath = Configuration.getDefaultEntryFilePath()
+    private val maxItemsCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ITEM_COUNT)
+    private val defaultItemsFilePath = Configuration.getDefaultItemFilePath()
     private val cache = LRUCache<String, Item>(maxItemsCount)
     val defaultItems = mutableMapOf<String, Item>()
 
@@ -36,7 +36,7 @@ object Cache {
      * The id of a default entry is hard coded to -2 for now
      */
     private fun loadData() {
-        val items = Storage.listRecentEntries(maxItemsCount).reversed()
+        val items = Storage.listRecentItems(maxItemsCount).reversed()
         File(defaultItemsFilePath).useLines { lines ->
             lines.map(String::trim).forEach { line ->
                 if (!line.startsWith(Configuration.SPECIAL_COMMENT) && line.isNotEmpty()) {
@@ -81,9 +81,9 @@ object Cache {
     fun set(item: Item) {
         cache.set(item.md5Digest, item)
         when (item.id) {
-            -1 -> Storage.saveEntry(item)
+            -1 -> Storage.saveItem(item)
             -2 -> Unit
-            else -> Storage.updateEntry(item)
+            else -> Storage.updateItem(item)
         }
     }
 
@@ -94,7 +94,7 @@ object Cache {
     fun delete(md5Digest: String) {
         cache[md5Digest]?.let { item ->
             cache.remove(md5Digest)
-            Storage.deleteEntry(item.id)
+            Storage.deleteItem(item.id)
         }
     }
 

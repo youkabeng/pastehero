@@ -4,14 +4,29 @@ package me.phph.app.pastehero
 
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.stage.Stage
+import me.phph.app.pastehero.thirdparty.initSystemTray
+import me.phph.app.pastehero.thirdparty.registerGlobalKeys
+import me.phph.app.pastehero.view.ViewFactory
 
+class App : Application() {
+    private val triggered = SimpleIntegerProperty(0)
 
-fun isWindows(): Boolean {
-    return System.getProperty("os.name").toLowerCase().contains("windows")
-}
+    override fun start(primaryStage: Stage?) {
+        ViewFactory.initMainWindow()
+        initSystemTray()
+        initBindings()
+        registerGlobalKeys()
+    }
 
-fun isLinux(): Boolean {
-    return System.getProperty("os.name").toLowerCase().contains("linux")
+    private fun initBindings() {
+        triggered.addListener { _, _, _ ->
+            Platform.runLater {
+                ViewFactory.showMainWindow()
+            }
+        }
+    }
 }
 
 fun main() {

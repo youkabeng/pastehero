@@ -17,7 +17,7 @@ Only tested in Manjaro KDE.
 
 #### Usage
 
-Default trigger short is Ctrl + Shift + V
+Default trigger shortcut is Ctrl + Shift + V
 
 Once the shortcut is triggered, the clipboard selection will popup, and you can make your selection easily.
 
@@ -65,7 +65,7 @@ mvn package
 #### Run
 
 ```
-nohup java -Xms128m -Xmx256m -XX:+UseG1GC \
+nohup java -Xms128m -Xmx512m -XX:+UseG1GC \
     -Djdk.gtk.version=3 \ 
     -jar pastehero-0.0.1-jar-with-dependencies.jar > .pastehero.log 2>&1 &
 ```

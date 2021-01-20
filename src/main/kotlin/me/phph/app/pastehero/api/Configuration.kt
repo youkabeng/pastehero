@@ -12,14 +12,14 @@ object Configuration {
     private const val CONF_CONFIG_NAME = "config_name"
     const val CONF_APP_HOME = "app_home"
     const val CONF_DB_NAME = "db_name"
-    const val CONF_MAX_ENTRY_COUNT = "max_entry_count"
+    const val CONF_MAX_ITEM_COUNT = "max_item_count"
     const val CONF_COUNT_PER_PAGE = "count_per_page"
     const val CONF_AUTO_TRIM = "auto_trim"
     const val CONF_AUTO_STRIP = "auto_strip"
     const val CONF_SEARCH_IGNORECASE = "search_ignorecase"
     const val CONF_TRIGGER_SHORTCUT = "trigger_shortcut"
 
-    private const val DEFAULT_ENTRIES = "default_entries"
+    private const val DEFAULT_ITEMS = "default_items"
     const val SPECIAL_COMMENT = "##########"
 
     val triggerKeys = mutableSetOf<String>()
@@ -32,7 +32,7 @@ object Configuration {
         configurations[CONF_APP_HOME] = System.getProperty("user.home") + sep + ".pastehero" + sep
         configurations[CONF_CONFIG_NAME] = "config"
         configurations[CONF_DB_NAME] = "data.db"
-        configurations[CONF_MAX_ENTRY_COUNT] = "100"
+        configurations[CONF_MAX_ITEM_COUNT] = "100"
         configurations[CONF_COUNT_PER_PAGE] = "20"
         configurations[CONF_AUTO_TRIM] = CONF_VALUE_TRUE
         configurations[CONF_AUTO_STRIP] = CONF_VALUE_FALSE
@@ -67,7 +67,7 @@ object Configuration {
             }
         }
         // defaults list
-        val defaultEntriesFile = File(homePath + DEFAULT_ENTRIES)
+        val defaultEntriesFile = File(homePath + DEFAULT_ITEMS)
         if (!defaultEntriesFile.exists()) {
             defaultEntriesFile.writer().use { writer ->
                 writer.write("$SPECIAL_COMMENT your default entries go here")
@@ -90,14 +90,14 @@ object Configuration {
     private fun getHomePath(): String {
         var homePath = configurations[CONF_APP_HOME]!!
         if (!homePath.endsWith(File.separatorChar)) {
-            homePath = homePath + File.separatorChar
+            homePath += File.separatorChar
         }
         return homePath
     }
 
-    fun getDefaultEntryFilePath(): String {
+    fun getDefaultItemFilePath(): String {
         val homePath = getHomePath()
-        return homePath + DEFAULT_ENTRIES
+        return homePath + DEFAULT_ITEMS
     }
 
     fun putConfiguration(key: String, value: String) {
