@@ -24,7 +24,7 @@ object Configuration {
 
     val triggerKeys = mutableSetOf<String>()
 
-    var stage: Stage? = null;
+    var stage: Stage? = null
 
     init {
         // default configurations go here
@@ -37,7 +37,7 @@ object Configuration {
         configurations[CONF_AUTO_TRIM] = CONF_VALUE_TRUE
         configurations[CONF_AUTO_STRIP] = CONF_VALUE_FALSE
         configurations[CONF_SEARCH_IGNORECASE] = CONF_VALUE_TRUE
-        configurations[CONF_TRIGGER_SHORTCUT] = "ctrl,shift,v"
+        configurations[CONF_TRIGGER_SHORTCUT] = "control,shift,V"
         setup()
     }
 
@@ -70,7 +70,7 @@ object Configuration {
         val defaultEntriesFile = File(homePath + DEFAULT_ITEMS)
         if (!defaultEntriesFile.exists()) {
             defaultEntriesFile.writer().use { writer ->
-                writer.write("$SPECIAL_COMMENT your default entries go here")
+                writer.write("$SPECIAL_COMMENT your default items go here")
             }
         }
 

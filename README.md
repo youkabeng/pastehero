@@ -21,13 +21,13 @@ Default trigger shortcut is Ctrl + Shift + V
 
 Once the shortcut is triggered, the clipboard selection will popup, and you can make your selection easily.
 
-The entry you selected will be copied to clipboard and for now you are good to go.
+The item you selected will be copied to clipboard and for now you are good to go.
 
-The entries honor an LRU cache strategy, that means the most recently copied entry will be displayed at topmost position.
+The items honor an LRU cache strategy, that means the most recently copied item will be displayed at topmost position.
 
 The cache will hold 100 entries by default.
 
-If you want to add some default entries, just edit the following file:
+If you want to add some default items, just edit the following file:
 
 ```
 ~/.pastehero/defaut_entries

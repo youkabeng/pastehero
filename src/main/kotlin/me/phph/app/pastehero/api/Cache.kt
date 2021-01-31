@@ -3,8 +3,8 @@ package me.phph.app.pastehero.api
 import java.io.File
 
 /**
- * LRU cache that holds [capacity] entries in max
- * If the cache is full, the earliest entry will be deleted
+ * LRU cache that holds [capacity] items in max
+ * If the cache is full, the earliest item will be deleted
  */
 class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity + 1, 1.0f, true) {
 
@@ -32,8 +32,8 @@ object Cache {
     }
 
     /**
-     * Load default entries first and then the regular entries
-     * The id of a default entry is hard coded to -2 for now
+     * Load default items first and then the regular items
+     * The id of a default item is hard coded to -2 for now
      */
     private fun loadData() {
         val items = Storage.listRecentItems(maxItemsCount).reversed()
@@ -41,8 +41,9 @@ object Cache {
             lines.map(String::trim).forEach { line ->
                 if (!line.startsWith(Configuration.SPECIAL_COMMENT) && line.isNotEmpty()) {
                     val md5 = md5(line.trim())
-                    val entry = Item(-2, ItemType.STRING, line.trim(), null, md5)
-                    defaultItems[md5] = entry
+                    val item = Item(-2, ItemType.STRING, line.trim(), null, md5)
+                    defaultItems[md5] = item
+                    cache.set(item.md5Digest, item)
                 }
             }
         }

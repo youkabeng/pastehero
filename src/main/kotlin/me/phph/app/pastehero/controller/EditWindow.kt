@@ -10,24 +10,24 @@ import me.phph.app.pastehero.api.Item
 import me.phph.app.pastehero.api.md5
 import org.fxmisc.richtext.StyleClassedTextArea
 
-class EditWindow(entry: Item) {
+class EditWindow(item: Item) {
     private var mainStage: Stage?
     private var mainScene: Scene?
     private var editArea = StyleClassedTextArea()
 
     init {
-        editArea.appendText(entry.value)
+        editArea.appendText(item.value)
         mainScene = Scene(editArea, 600.0, 400.0).apply {
             addEventHandler(KeyEvent.KEY_PRESSED) {
                 if (it.code == KeyCode.ESCAPE) {
                     close()
                 } else if (it.isControlDown && it.code == KeyCode.S) {
-                    entry.updateTs = System.currentTimeMillis()
-                    entry.value = editArea.text.trim()
-                    Cache.delete(entry.md5Digest)
-                    val md5Digest = md5(entry.value)
-                    entry.md5Digest = md5Digest
-                    Cache.set(entry)
+                    item.updateTs = System.currentTimeMillis()
+                    item.value = editArea.text.trim()
+                    Cache.delete(item.md5Digest)
+                    val md5Digest = md5(item.value)
+                    item.md5Digest = md5Digest
+                    Cache.set(item)
                     ClipboardApi.setClipboard(md5Digest)
                     close()
                 } else if (it.isControlDown && it.code == KeyCode.Z) {
