@@ -23,7 +23,7 @@ class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity +
  */
 object Cache {
     private val maxItemsCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ITEM_COUNT)
-    private val defaultItemsFilePath = Configuration.getDefaultItemFilePath()
+    private val defaultItemsFilePath = Configuration.getDefaultItemsFilePath()
     private val cache = LRUCache<String, Item>(maxItemsCount)
     val defaultItems = mutableMapOf<String, Item>()
 
@@ -43,7 +43,6 @@ object Cache {
                     val md5 = md5(line.trim())
                     val item = Item(-2, ItemType.STRING, line.trim(), null, md5)
                     defaultItems[md5] = item
-                    cache.set(item.md5Digest, item)
                 }
             }
         }
@@ -51,6 +50,9 @@ object Cache {
             if (!defaultItems.containsKey(item.md5Digest)) {
                 cache.set(item.md5Digest, item)
             }
+        }
+        for (item in defaultItems.values) {
+            cache.set(item.md5Digest, item)
         }
     }
 

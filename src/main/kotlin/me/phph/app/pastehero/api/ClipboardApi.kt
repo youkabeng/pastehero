@@ -55,11 +55,12 @@ object ClipboardApi {
         val start = 0
         val end = Cache.count()
         val searchIgnoreCase = Configuration.getConfigurationBool(Configuration.CONF_SEARCH_IGNORECASE)
-        return ((if (searchString.isEmpty()) arrayListOf() else Cache.defaultItems.map { it.value }) + Cache.listItems(
-            start,
-            end
-        )).filter {
-            if (searchString.isEmpty()) true else it.value.contains(searchString, searchIgnoreCase)
+        val items = Cache.listItems(start, end)
+        return if (searchString.isEmpty()) items else items.filter {
+            if (searchString.isEmpty()) true else it.value.contains(
+                searchString,
+                searchIgnoreCase
+            )
         }
     }
 

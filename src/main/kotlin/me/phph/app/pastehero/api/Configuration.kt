@@ -1,6 +1,5 @@
 package me.phph.app.pastehero.api
 
-import javafx.stage.Stage
 import java.io.File
 
 object Configuration {
@@ -21,10 +20,6 @@ object Configuration {
 
     private const val DEFAULT_ITEMS = "default_items"
     const val SPECIAL_COMMENT = "##########"
-
-    val triggerKeys = mutableSetOf<String>()
-
-    var stage: Stage? = null
 
     init {
         // default configurations go here
@@ -61,19 +56,13 @@ object Configuration {
                 }
             }
         }
-        configurations[CONF_TRIGGER_SHORTCUT]?.let { config ->
-            for (s in config.split(",").map(String::trim)) {
-                triggerKeys.add(s)
-            }
-        }
-        // defaults list
+        // default items
         val defaultEntriesFile = File(homePath + DEFAULT_ITEMS)
         if (!defaultEntriesFile.exists()) {
             defaultEntriesFile.writer().use { writer ->
                 writer.write("$SPECIAL_COMMENT your default items go here")
             }
         }
-
     }
 
     private fun readConfiguration(f: File) {
@@ -95,7 +84,7 @@ object Configuration {
         return homePath
     }
 
-    fun getDefaultItemFilePath(): String {
+    fun getDefaultItemsFilePath(): String {
         val homePath = getHomePath()
         return homePath + DEFAULT_ITEMS
     }

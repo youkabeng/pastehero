@@ -47,7 +47,7 @@ class MainWindowController(fxmlPath: String) :
     private val updated = SimpleIntegerProperty(0)
     private val searchTimer = Timer()
     private val countPerPage: Int = Configuration.getConfigurationInt(Configuration.CONF_COUNT_PER_PAGE)
-    private var lastTrigger = 0L
+    private var lastWindowTriggeredAt = 0L
 
     override fun initialize(url: URL?, resourceBundle: ResourceBundle?) {
         setupSearchTextField()
@@ -78,10 +78,10 @@ class MainWindowController(fxmlPath: String) :
             initStyle(StageStyle.UTILITY)
             stage.focusedProperty().addListener { _, _, newValue ->
                 if (newValue) {
-                    lastTrigger = System.currentTimeMillis()
+                    lastWindowTriggeredAt = System.currentTimeMillis()
                     show()
                 } else {
-                    if (System.currentTimeMillis() - lastTrigger > 500)
+                    if (System.currentTimeMillis() - lastWindowTriggeredAt > 500)
                         hide()
                 }
             }
@@ -147,8 +147,8 @@ class MainWindowController(fxmlPath: String) :
 
     private fun setupItemsVbox(searchString: String = "") {
         itemsVbox!!.apply {
-            children.clear();
-            var count = 0;
+            children.clear()
+            var count = 0
             val items = ClipboardApi.listItems(searchString)
             val size = items.size
             for (item in items) {
