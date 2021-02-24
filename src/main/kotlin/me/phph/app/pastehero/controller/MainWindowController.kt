@@ -26,8 +26,8 @@ import javafx.stage.Stage
 import javafx.stage.StageStyle
 import javafx.util.Duration
 import me.phph.app.pastehero.api.*
+import me.phph.app.pastehero.view.ViewFactory
 import org.kordamp.ikonli.javafx.FontIcon
-import java.awt.MouseInfo
 import java.net.URL
 import java.util.*
 
@@ -57,9 +57,9 @@ class MainWindowController(fxmlPath: String) :
 
     override fun show() {
         stage?.let { stage ->
-            val location = MouseInfo.getPointerInfo().location
-            stage.x = location.x * 1.0
-            stage.y = location.y * 1.0
+            val point = getMouseLocation()
+            stage.x = point.first
+            stage.y = point.second
             stage.requestFocus()
             stage.show()
             if (stage.isMaximized) {
@@ -87,6 +87,7 @@ class MainWindowController(fxmlPath: String) :
             }
             onCloseRequest = EventHandler { hide() }
             isAlwaysOnTop = true
+            title = "Pastehero"
         }
     }
 
@@ -106,7 +107,7 @@ class MainWindowController(fxmlPath: String) :
                     findFocusedItemUserData()?.let { item -> deleteItem(item) }
                 } else if (it.isControlDown && it.code == KeyCode.E) {
                     findFocusedItemUserData()?.let { userData ->
-                        Cache.get(userData)?.let { item -> EditWindow(item).show() }
+                        Cache.get(userData)?.let { item -> ViewFactory.showEditWindow(item) }
                     }
                 } else if (it.isControlDown && it.code == KeyCode.Q) {
                     searchTextFieldRequestFocus()
@@ -190,7 +191,7 @@ class MainWindowController(fxmlPath: String) :
                             val itemUserData = ev.source.let { it as Button }.userData as String
                             Cache.get(itemUserData)?.let {
                                 hide()
-                                EditWindow(it).show()
+                                ViewFactory.showEditWindow(it)
                             }
                         }
                         isFocusTraversable = false

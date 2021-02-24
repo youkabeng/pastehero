@@ -1,5 +1,7 @@
 package me.phph.app.pastehero.controller
 
+import javafx.fxml.FXML
+import javafx.fxml.Initializable
 import javafx.scene.Scene
 import javafx.scene.control.ScrollPane
 import javafx.scene.input.KeyCode
@@ -11,22 +13,34 @@ import me.phph.app.pastehero.api.Item
 import me.phph.app.pastehero.api.md5
 import org.fxmisc.richtext.LineNumberFactory
 import org.fxmisc.richtext.StyleClassedTextArea
+import java.net.URL
+import java.util.*
 
-class EditWindow(item: Item) {
-    private var mainStage: Stage?
-    private var mainScene: Scene?
+class EditWindowController(fxmlPath: String, val item: Item) :
+    BaseController(fxmlPath), Initializable {
+
+    @FXML
+    private var editAreaScrollPane: ScrollPane? = null
+
     private var editArea = StyleClassedTextArea()
 
-    init {
+    override fun initialize(location: URL?, resources: ResourceBundle?) {
+        setupEditArea()
+    }
+
+    private fun setupEditArea() {
         editArea.isWrapText = true
         editArea.paragraphGraphicFactory = LineNumberFactory.get(editArea)
         editArea.appendText(item.value)
+        editAreaScrollPane?.content = editArea
+    }
 
-        val scrollPane = ScrollPane(editArea)
-        scrollPane.isFitToWidth = true
-        scrollPane.isFitToHeight = true
+    override fun setupStage(stage: Stage) {
+        stage.title = "Pastehero - Edit"
+    }
 
-        mainScene = Scene(scrollPane, 600.0, 400.0).apply {
+    override fun setupScene(scene: Scene) {
+        scene.apply {
             addEventHandler(KeyEvent.KEY_PRESSED) {
                 if (it.code == KeyCode.ESCAPE) {
                     close()
@@ -44,22 +58,5 @@ class EditWindow(item: Item) {
                 }
             }
         }
-
-        mainStage = Stage().apply {
-            scene = mainScene
-            title = "Edit Item"
-        }
     }
-
-    fun show() {
-        mainStage?.let { stage ->
-            stage.requestFocus()
-            stage.show()
-        }
-    }
-
-    private fun close() {
-        mainStage?.close()
-    }
-
 }

@@ -2,6 +2,7 @@ package me.phph.app.pastehero.api
 
 import com.alibaba.fastjson.JSONObject
 import org.xml.sax.InputSource
+import java.awt.MouseInfo
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
 import java.io.StringReader
@@ -75,4 +76,9 @@ fun isWindows(): Boolean {
 
 fun isLinux(): Boolean {
     return System.getProperty("os.name").toLowerCase().contains("linux")
+}
+
+fun getMouseLocation(): Pair<Double, Double> {
+    val location = MouseInfo.getPointerInfo().location
+    return Pair(location.x * 1.0, location.y * 1.0)
 }

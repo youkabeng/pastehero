@@ -9,7 +9,10 @@ open class BaseController(val fxmlPath: String) {
     var scene: Scene? = null
 
     open fun show() {
-        stage?.show()
+        stage?.let { stage ->
+            stage.requestFocus()
+            stage.show()
+        }
     }
 
     open fun hide() {
