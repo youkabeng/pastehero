@@ -161,6 +161,7 @@ object Storage {
 
     fun listRecentItems(count: Int): List<Item> {
         val sql = ("select id,type,data,binary,md5_digest,update_ts from $TABLE_ITEMS"
+                + if (Configuration.getConfigurationBool(Configuration.CONF_IGNORE_IMAGE)) " where type!='${ItemType.IMAGE.name}'" else ""
                 + " order by update_ts desc limit $count")
         val retList = mutableListOf<Item>()
         var statement: Statement? = null

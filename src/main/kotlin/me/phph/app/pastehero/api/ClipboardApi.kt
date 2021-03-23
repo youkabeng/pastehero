@@ -86,7 +86,13 @@ object ClipboardApi {
                     }
                 }
             }
-            clipboard.hasImage() -> listOf(clipboard.image, ItemType.IMAGE)
+            clipboard.hasImage() -> {
+                if (!configuration.getConfigurationBool(Configuration.CONF_IGNORE_IMAGE)) {
+                    listOf(clipboard.image, ItemType.IMAGE)
+                } else {
+                    return
+                }
+            }
             else -> return
         }
 
@@ -134,14 +140,16 @@ object ClipboardApi {
                     clipboard.setContent(ClipboardContent().apply { putString(item.value) })
                 }
                 ItemType.IMAGE -> {
-                    clipboard.setContent(ClipboardContent().apply {
-                        putImage(
-                            SwingFXUtils.toFXImage(
-                                item.image!!,
-                                null
+                    if (!Configuration.getConfigurationBool(Configuration.CONF_IGNORE_IMAGE)) {
+                        clipboard.setContent(ClipboardContent().apply {
+                            putImage(
+                                SwingFXUtils.toFXImage(
+                                    item.image!!,
+                                    null
+                                )
                             )
-                        )
-                    })
+                        })
+                    }
                 }
                 ItemType.FILES -> {
                     item.value.split("\n").map { File(it.replace("file://", "")) }.let { fileList ->
