@@ -81,7 +81,7 @@ class MainWindowController(fxmlPath: String) :
                     lastWindowTriggeredAt = System.currentTimeMillis()
                     show()
                 } else {
-                    if (System.currentTimeMillis() - lastWindowTriggeredAt > 500)
+                    if (System.currentTimeMillis() - lastWindowTriggeredAt > 300)
                         hide()
                 }
             }
