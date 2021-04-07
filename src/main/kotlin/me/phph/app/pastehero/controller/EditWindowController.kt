@@ -53,7 +53,7 @@ class EditWindowController(fxmlPath: String, val item: Item) :
                     Cache.set(item)
                     ClipboardApi.setClipboard(md5Digest)
                     close()
-                } else if (it.isControlDown && it.code == KeyCode.Z) {
+                } else if (it.isControlDown && it.code == KeyCode.Q) {
                     close()
                 }
             }

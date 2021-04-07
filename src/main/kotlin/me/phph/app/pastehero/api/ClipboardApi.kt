@@ -25,13 +25,13 @@ enum class ItemType {
 }
 
 data class Item(
-        var id: Int = -1,
-        var type: ItemType = ItemType.STRING,
-        var value: String = "",
-        var image: BufferedImage? = null,
-        var md5Digest: String,
-        var updateTs: Long = 0,
-        val variants: MutableList<Item> = mutableListOf()
+    var id: Int = -1,
+    var type: ItemType = ItemType.STRING,
+    var value: String = "",
+    var image: BufferedImage? = null,
+    var md5Digest: String,
+    var updateTs: Long = 0,
+    val variants: MutableList<Item> = mutableListOf()
 )
 
 object ClipboardApi {
@@ -58,8 +58,8 @@ object ClipboardApi {
         val items = Cache.listItems(start, end)
         return if (searchString.isEmpty()) items else items.filter {
             if (searchString.isEmpty()) true else it.value.contains(
-                    searchString,
-                    searchIgnoreCase
+                searchString,
+                searchIgnoreCase
             )
         }
     }
@@ -86,7 +86,13 @@ object ClipboardApi {
                     }
                 }
             }
-            clipboard.hasImage() -> listOf(clipboard.image, ItemType.IMAGE)
+            clipboard.hasImage() -> {
+                if (!configuration.getConfigurationBool(Configuration.CONF_IGNORE_IMAGE)) {
+                    listOf(clipboard.image, ItemType.IMAGE)
+                } else {
+                    return
+                }
+            }
             else -> return
         }
 
@@ -102,22 +108,20 @@ object ClipboardApi {
                 return
             }
             val md5Digest = md5(data)
-            if (!Cache.ignoredItems.contains(md5Digest)) {
-                when {
-                    Cache.defaultItems.containsKey(md5Digest) -> {
-                        Cache.defaultItems[md5Digest]?.let { e ->
-                            if (type != e.type) {
-                                e.type = type as ItemType
-                            }
-                            Cache.set(e)
+            when {
+                Cache.defaultItems.containsKey(md5Digest) -> {
+                    Cache.defaultItems[md5Digest]?.let { e ->
+                        if (type != e.type) {
+                            e.type = type as ItemType
                         }
+                        Cache.set(e)
                     }
-                    Cache.contains(md5Digest) -> {
-                        Cache.get(md5Digest)?.let(Cache::set)
-                    }
-                    else -> {
-                        Cache.set(Item(type = type as ItemType, value = data, md5Digest = md5Digest))
-                    }
+                }
+                Cache.contains(md5Digest) -> {
+                    Cache.get(md5Digest)?.let(Cache::set)
+                }
+                else -> {
+                    Cache.set(Item(type = type as ItemType, value = data, md5Digest = md5Digest))
                 }
             }
         }
@@ -136,14 +140,16 @@ object ClipboardApi {
                     clipboard.setContent(ClipboardContent().apply { putString(item.value) })
                 }
                 ItemType.IMAGE -> {
-                    clipboard.setContent(ClipboardContent().apply {
-                        putImage(
+                    if (!Configuration.getConfigurationBool(Configuration.CONF_IGNORE_IMAGE)) {
+                        clipboard.setContent(ClipboardContent().apply {
+                            putImage(
                                 SwingFXUtils.toFXImage(
-                                        item.image!!,
-                                        null
+                                    item.image!!,
+                                    null
                                 )
-                        )
-                    })
+                            )
+                        })
+                    }
                 }
                 ItemType.FILES -> {
                     item.value.split("\n").map { File(it.replace("file://", "")) }.let { fileList ->

@@ -17,6 +17,7 @@ object Configuration {
     const val CONF_AUTO_STRIP = "auto_strip"
     const val CONF_SEARCH_IGNORECASE = "search_ignorecase"
     const val CONF_TRIGGER_SHORTCUT = "trigger_shortcut"
+    const val CONF_IGNORE_IMAGE = "ignore_image"
 
     private const val DEFAULT_ITEMS = "default_items"
     private const val IGNORED_ITEMS = "ignored_items"
@@ -34,6 +35,7 @@ object Configuration {
         configurations[CONF_AUTO_STRIP] = CONF_VALUE_FALSE
         configurations[CONF_SEARCH_IGNORECASE] = CONF_VALUE_TRUE
         configurations[CONF_TRIGGER_SHORTCUT] = "control,shift,V"
+        configurations[CONF_IGNORE_IMAGE] = CONF_VALUE_TRUE
         setup()
     }
 
