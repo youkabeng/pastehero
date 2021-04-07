@@ -19,6 +19,7 @@ object Configuration {
     const val CONF_TRIGGER_SHORTCUT = "trigger_shortcut"
 
     private const val DEFAULT_ITEMS = "default_items"
+    private const val IGNORED_ITEMS = "ignored_items"
     const val SPECIAL_COMMENT = "##########"
 
     init {
@@ -57,10 +58,17 @@ object Configuration {
             }
         }
         // default items
-        val defaultEntriesFile = File(homePath + DEFAULT_ITEMS)
-        if (!defaultEntriesFile.exists()) {
-            defaultEntriesFile.writer().use { writer ->
-                writer.write("$SPECIAL_COMMENT your default items go here")
+        val defaultItemsFile = File(homePath + DEFAULT_ITEMS)
+        if (!defaultItemsFile.exists()) {
+            defaultItemsFile.writer().use { writer ->
+                writer.write("$SPECIAL_COMMENT Default items go here")
+            }
+        }
+        // ignored items
+        val ignoredItemsFile = File(homePath + IGNORED_ITEMS)
+        if (!ignoredItemsFile.exists()) {
+            ignoredItemsFile.writer().use { writer ->
+                writer.write("$SPECIAL_COMMENT Ignored items go here")
             }
         }
     }
@@ -87,6 +95,11 @@ object Configuration {
     fun getDefaultItemsFilePath(): String {
         val homePath = getHomePath()
         return homePath + DEFAULT_ITEMS
+    }
+
+    fun getIgnoredItemsFilePath(): String {
+        val homePath = getHomePath()
+        return homePath + IGNORED_ITEMS
     }
 
     fun putConfiguration(key: String, value: String) {

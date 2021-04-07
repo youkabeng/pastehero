@@ -24,8 +24,10 @@ class LRUCache<K, V>(private val capacity: Int) : LinkedHashMap<K, V>(capacity +
 object Cache {
     private val maxItemsCount: Int = Configuration.getConfigurationInt(Configuration.CONF_MAX_ITEM_COUNT)
     private val defaultItemsFilePath = Configuration.getDefaultItemsFilePath()
+    private val ignoredItemsFilePath = Configuration.getIgnoredItemsFilePath()
     private val cache = LRUCache<String, Item>(maxItemsCount)
     val defaultItems = mutableMapOf<String, Item>()
+    val ignoredItems = mutableSetOf<String>()
 
     init {
         loadData()
@@ -36,6 +38,15 @@ object Cache {
      * The id of a default item is hard coded to -2 for now
      */
     private fun loadData() {
+        // read ignored items
+        File(ignoredItemsFilePath).useLines { lines ->
+            lines.map(String::trim).forEach { line ->
+                if (!line.startsWith(Configuration.SPECIAL_COMMENT) && line.isNotEmpty()) {
+                    ignoredItems.add(line)
+                }
+            }
+        }
+        // load items
         val items = Storage.listRecentItems(maxItemsCount).reversed()
         File(defaultItemsFilePath).useLines { lines ->
             lines.map(String::trim).forEach { line ->
@@ -47,12 +58,14 @@ object Cache {
             }
         }
         for (item in items) {
-            if (!defaultItems.containsKey(item.md5Digest)) {
+            if (!defaultItems.containsKey(item.md5Digest) && !ignoredItems.contains(item.md5Digest)) {
                 cache.set(item.md5Digest, item)
             }
         }
         for (item in defaultItems.values) {
-            cache.set(item.md5Digest, item)
+            if (!ignoredItems.contains(item.md5Digest)) {
+                cache.set(item.md5Digest, item)
+            }
         }
     }
 

@@ -6,7 +6,7 @@
 
     <groupId>me.phph.app.pastehero</groupId>
     <artifactId>pastehero</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <properties>
         <jfx.version>11.0.2</jfx.version>
