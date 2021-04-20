@@ -108,6 +108,9 @@ object ClipboardApi {
                 return
             }
             val md5Digest = md5(data)
+            if (Cache.ignoredItems.contains(md5Digest)) {
+                return
+            }
             when {
                 Cache.defaultItems.containsKey(md5Digest) -> {
                     Cache.defaultItems[md5Digest]?.let { e ->

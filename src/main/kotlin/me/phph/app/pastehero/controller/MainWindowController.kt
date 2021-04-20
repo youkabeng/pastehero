@@ -87,7 +87,7 @@ class MainWindowController(fxmlPath: String) :
             }
             onCloseRequest = EventHandler { hide() }
             isAlwaysOnTop = true
-            title = "Pastehero"
+            title = "Paste Hero"
         }
     }
 
@@ -271,7 +271,7 @@ class MainWindowController(fxmlPath: String) :
                     }
                     Tooltip.install(
                         this,
-                        Tooltip(if (text.length > lengthLimit * 3) text.substring(0, lengthLimit) else text).apply {
+                        Tooltip(if (text.length > lengthLimit * 5) text.substring(0, lengthLimit * 5) else text).apply {
                             showDelay = Duration.millis(50.0)
                             showDuration = Duration.minutes(1.0)
                         })

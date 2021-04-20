@@ -36,7 +36,7 @@ class EditWindowController(fxmlPath: String, val item: Item) :
     }
 
     override fun setupStage(stage: Stage) {
-        stage.title = "Pastehero - Edit"
+        stage.title = "Paste Hero - Edit"
     }
 
     override fun setupScene(scene: Scene) {
